@@ -102,65 +102,50 @@
                                 <h6 class="mb-2 text-primary">Thông tin người dùng</h6>
                             </div>
                             <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label for="fullName">Số điện thoại</label>
-                                    <input type="text" class="form-control" id="phoneNumber" placeholder="">
-                                </div>
-                            </div>
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label for="eMail">Họ và tên</label>
-                                    <input type="email" class="form-control" id="fullName" placeholder="">
-                                </div>
-                            </div>
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label for="phone">Giới tính</label>
-                                    <input type="text" class="form-control" id="phone" placeholder="">
-                                </div>
-                            </div>
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label for="website">Ngày sinh</label>
-                                    <input type="url" class="form-control" id="website" placeholder="Website url">
-                                </div>
-                            </div>
-                        </div>
-                        <div class="row gutters">
-                            <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
-                                <h6 class="mt-3 mb-2 text-primary">Address</h6>
-                            </div>
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label for="Street">Street</label>
-                                    <input type="name" class="form-control" id="Street" placeholder="Enter Street">
-                                </div>
-                            </div>
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label for="ciTy">City</label>
-                                    <input type="name" class="form-control" id="ciTy" placeholder="Enter City">
-                                </div>
-                            </div>
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label for="sTate">State</label>
-                                    <input type="text" class="form-control" id="sTate" placeholder="Enter State">
-                                </div>
-                            </div>
-                            <div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
-                                <div class="form-group">
-                                    <label for="zIp">Zip Code</label>
-                                    <input type="text" class="form-control" id="zIp" placeholder="Zip Code">
-                                </div>
-                            </div>
-                        </div>
+							    <div class="form-group">
+							        <label for="phoneNumber">Số điện thoại</label>
+							        <input type="text" class="form-control" id="phoneNumber" placeholder="" th:value="${loggedInUser.phoneNumber}" readonly>
+							    </div>
+							</div>
+							<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+							    <div class="form-group">
+							        <label for="fullName">Họ và tên</label>
+							        <input type="text" class="form-control" id="fullName" placeholder="" th:value="${loggedInUser.fullName}">
+							    </div>
+							</div>
+							<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+							    <div class="form-group">
+							        <label>Giới tính</label><br>
+							        <div class="form-check form-check-inline">
+							            <input class="form-check-input" type="radio" name="gender" id="maleRadio" value="male" th:checked="${loggedInUser.gender == 'male'}">
+							            <label class="form-check-label" for="maleRadio">Nam</label>
+							        </div>
+							        <div class="form-check form-check-inline">
+							            <input class="form-check-input" type="radio" name="gender" id="femaleRadio" value="female" th:checked="${loggedInUser.gender == 'female'}">
+							            <label class="form-check-label" for="femaleRadio">Nữ</label>
+							        </div>
+							        <div class="form-check form-check-inline">
+							            <input class="form-check-input" type="radio" name="gender" id="otherRadio" value="other" th:checked="${loggedInUser.gender == 'other'}">
+							            <label class="form-check-label" for="otherRadio">Khác</label>
+							        </div>
+							    </div>
+							</div>
+
+
+							<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+							    <div class="form-group">
+							        <label for="dob">Ngày sinh</label>
+							        <input type="date" class="form-control" id="dob" placeholder="" th:value="${loggedInUser.dob}">
+							    </div>
+							</div>
+
+                        
                         <div class="row gutters">
                             <div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
                                 <div class="text-right">
-                                   <a th:href="@{/showFormHome}" class="btn btn-secondary">Back</a>
+                                   <a th:href="@{/showFormHome}" class="btn btn-secondary">Quay lại</a>
                                     <button type="button" id="submit" name="submit"
-                                        class="btn btn-primary">Update</button>
+                                        class="btn btn-primary">Cập nhật</button>
                                 </div>
                             </div>
                         </div>
