@@ -145,4 +145,38 @@ public class UserController {
         session.removeAttribute("loggedInUser");
         return "redirect:/";
     }
+	
+	@PostMapping("/update")
+	public String updateUser(@ModelAttribute @Validated User updatedUser, BindingResult bindingResult,
+	                         HttpSession session, Model model) {
+	    // Lấy thông tin người dùng đã đăng nhập từ session
+	    User loggedInUser = (User) session.getAttribute("loggedInUser");
+
+	    // Kiểm tra xem người dùng đã đăng nhập hay chưa
+	    if (loggedInUser == null) {
+	        // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+	        return "redirect:/";
+	    }
+
+	    // Kiểm tra tính hợp lệ của thông tin người dùng chỉnh sửa
+	    if (bindingResult.hasErrors()) {
+	        // Nếu có lỗi, chuyển hướng về trang chỉnh sửa và giữ lại thông tin đã nhập
+	        model.addAttribute("loggedInUser", loggedInUser);
+	        return "EditProfile";
+	    }
+
+	    // Cập nhật thông tin người dùng từ dữ liệu mới được gửi từ form
+	    loggedInUser.setFullName(updatedUser.getFullName());
+	    loggedInUser.setGender(updatedUser.getGender());
+	    loggedInUser.setDob(updatedUser.getDob());
+
+	    // Lưu thông tin người dùng sau khi cập nhật
+	    userService.saveUser(loggedInUser);
+
+	    // Chuyển hướng về trang chính sau khi cập nhật thành công
+	    return "redirect:/showFormHome";
+	}
+
+
+
 }
