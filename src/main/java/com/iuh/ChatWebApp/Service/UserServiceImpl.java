@@ -1,6 +1,8 @@
 package com.iuh.ChatWebApp.Service;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -18,14 +20,14 @@ public class UserServiceImpl {
     @Autowired
     private UserRepository userRepository;
 
-
-
+    // luu tong tin
     public String saveUser(User user) {
         // Xử lý lưu thông tin user
         userRepository.save(user);
         return "Đăng ký thành công";
     }
 
+    //kiem tra trung sdt
 	public String findByPhoneNumber(String phoneNumber) {
 		if(userRepository.existsByPhoneNumber(phoneNumber) == true) {
 			return "Bị trùng số điện thoại";
@@ -37,4 +39,12 @@ public class UserServiceImpl {
 		return userRepository.findByPhoneNumberAndPassword(phoneNumber, password);
 	}
 
+	
+	public List<User> searchUsers(String searchText) {
+	    List<User> foundUsers = new ArrayList<>();
+	    // Tìm kiếm người dùng theo số điện thoại hoặc tên đầy đủ
+	    foundUsers.addAll(userRepository.findByPhoneNumberContainingIgnoreCase(searchText));
+	    foundUsers.addAll(userRepository.findByFullNameContainingIgnoreCase(searchText));
+	    return foundUsers;
+	}
 }

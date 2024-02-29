@@ -1,6 +1,7 @@
 package com.iuh.ChatWebApp.controller;
 
 import java.io.Console;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -178,5 +179,12 @@ public class UserController {
 	}
 
 
-
+	@GetMapping("/searchUsers")
+	public String searchUsers(@RequestParam("searchText") String searchText, Model model) {
+	    // Thực hiện tìm kiếm người dùng dựa trên searchText và lưu kết quả vào model
+	    List<User> searchResults = userService.searchUsers(searchText);
+	    model.addAttribute("searchResults", searchResults);
+	    // Trả về view để hiển thị kết quả tìm kiếm
+	    return "searchResults";
+	}
 }

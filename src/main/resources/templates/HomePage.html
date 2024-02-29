@@ -103,6 +103,20 @@
 		.hidden {
 			display: none;
 		}
+
+		#searchResults {
+			position: absolute;
+			width: 100%;
+			max-height: 200px;
+			/* Điều chỉnh chiều cao tối đa của danh sách người dùng */
+			overflow-y: auto;
+			/* Cho phép cuộn nếu danh sách quá dài */
+			background-color: #ffffff;
+			border: 1px solid #ced4da;
+			border-radius: 0.25rem;
+			z-index: 999;
+			/* Đảm bảo danh sách hiển thị trên các phần tử khác */
+		}
 	</style>
 </head>
 
@@ -136,25 +150,16 @@
 						<input type="text" class="form-control my-3" placeholder="Search...">
 					</div>
 				</div>
-				<a href="#" class="list-group-item list-group-item-action border-0" onclick="toggleChat()">
-						<!-- <div class="badge bg-success float-right">5</div> -->
-						<div class="d-flex align-items-start">
-							<img src="https://bootdey.com/img/Content/avatar/avatar5.png" class="rounded-circle mr-1"
-								alt="Vanessa Tucker" width="40" height="40">
-							<div class="flex-grow-1 ml-3">
-								Vanessa Tucker
-								<div class="small"><span class="fas fa-circle chat-online"></span> Online</div>
-							</div>
-						</div>
-					</a>
 
+				<div id="searchResults" class="mt-3"></div>
 			</div>
+
 
 
 			<hr class="d-block d-lg-none mt-1 mb-0">
 		</div>
 		<div>
-			<div class="chat hidden" >
+			<div class="chat hidden">
 				<div class="chat-header">
 					<div class="py-2 px-4 border-bottom d-none d-lg-block">
 						<div class="d-flex align-items-center py-1">
@@ -167,10 +172,10 @@
 								<div class="text-muted small"><em>Online</em></div>
 							</div>
 							<div class="Button" style="margin-left: 300px;">
-								<button class="btn btn-primary btn-lg mr-1 px-3" style="display: inline-block;"><svg xmlns="http://www.w3.org/2000/svg"
-										width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-										stroke-width="2" stroke-linecap="round" stroke-linejoin="round"
-										class="feather feather-phone feather-lg">
+								<button class="btn btn-primary btn-lg mr-1 px-3" style="display: inline-block;"><svg
+										xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24"
+										fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+										stroke-linejoin="round" class="feather feather-phone feather-lg">
 										<path
 											d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z">
 										</path>
@@ -182,7 +187,7 @@
 										<polygon points="23 7 16 12 23 17 23 7"></polygon>
 										<rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>
 									</svg></button>
-								
+
 							</div>
 						</div>
 					</div>
@@ -240,6 +245,9 @@
 				});
 			});
 		});
+
+
+
 		//
 		function toggleChat() {
 			var chatDiv = document.querySelector('.chat');
@@ -276,6 +284,22 @@
 					</a>
 		
 		*/
+
+		$(document).ready(function () {
+			$('#searchInput').on('input', function () {
+				var searchText = $(this).val().trim();
+				if (searchText !== '') {
+					// Gửi yêu cầu AJAX để tìm kiếm người dùng
+					$.get("/searchUsers", {searchText: searchText}, function (data) {
+						$('#searchResults').html(data);
+						$('#searchResults').show(); // Hiển thị phần tử searchResults
+					});
+				} else {
+					$('#searchResults').html('');
+					$('#searchResults').hide(); // Ẩn phần tử searchResults nếu không có kết quả tìm kiếm
+				}
+			});
+		});
 	</script>
 </body>
 
