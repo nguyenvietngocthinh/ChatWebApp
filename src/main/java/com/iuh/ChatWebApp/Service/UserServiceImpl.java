@@ -18,18 +18,7 @@ public class UserServiceImpl {
     @Autowired
     private UserRepository userRepository;
 
-    public User login(String phoneNumber, String password) {
-        User user = userRepository.findByPhoneNumberAndPassword(phoneNumber, password);
 
-        if (user != null) {
-            
-            user.setAdmin(false);
-            user.setOnline(true);;
-            userRepository.save(user);
-        }
-
-        return user;
-    }
 
     public String saveUser(User user) {
         // Xử lý lưu thông tin user
