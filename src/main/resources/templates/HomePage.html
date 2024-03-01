@@ -103,20 +103,6 @@
 		.hidden {
 			display: none;
 		}
-
-		#searchResults {
-			position: absolute;
-			width: 100%;
-			max-height: 200px;
-			/* Điều chỉnh chiều cao tối đa của danh sách người dùng */
-			overflow-y: auto;
-			/* Cho phép cuộn nếu danh sách quá dài */
-			background-color: #ffffff;
-			border: 1px solid #ced4da;
-			border-radius: 0.25rem;
-			z-index: 999;
-			/* Đảm bảo danh sách hiển thị trên các phần tử khác */
-		}
 	</style>
 </head>
 
@@ -147,11 +133,14 @@
 			<div class="px-4 d-none d-md-block">
 				<div class="d-flex align-items-center">
 					<div class="flex-grow-1">
-						<input type="text" class="form-control my-3" placeholder="Search...">
+						<input type="text" class="form-control my-3" id="searchInput" placeholder="Search...">
 					</div>
 				</div>
 
-				<div id="searchResults" class="mt-3"></div>
+				<div class="list-group" id="searchResults">
+
+				</div>
+
 			</div>
 
 
@@ -259,6 +248,30 @@
 				chatDiv1.classList.add('hidden');
 			}
 		}
+
+	// Truyền dữ liệu tìm kiếm từ frontend lên backend thông qua Ajax.
+		$(document).ready(function () {
+			// Lắng nghe sự kiện khi người dùng nhập vào ô tìm kiếm
+			$("#searchInput").on("keyup", function () {
+				// Lấy giá trị từ ô tìm kiếm
+				var searchText = $(this).val().trim();
+				// Gửi yêu cầu AJAX đến endpoint /search
+				$.ajax({
+					url: "/search",
+					method: "GET",
+					data: {
+						searchText: searchText
+					},
+					success: function (response) {
+						// Hiển thị kết quả tìm kiếm
+						$("#searchResults").html(response);
+					},
+					error: function (xhr, status, error) {
+						console.error("Lỗi:", error);
+					}
+				});
+			});
+		});
 		/**
 					<a href="#" class="list-group-item list-group-item-action border-0">
 						<div class="badge bg-success float-right">5</div>
@@ -285,21 +298,7 @@
 		
 		*/
 
-		$(document).ready(function () {
-			$('#searchInput').on('input', function () {
-				var searchText = $(this).val().trim();
-				if (searchText !== '') {
-					// Gửi yêu cầu AJAX để tìm kiếm người dùng
-					$.get("/searchUsers", {searchText: searchText}, function (data) {
-						$('#searchResults').html(data);
-						$('#searchResults').show(); // Hiển thị phần tử searchResults
-					});
-				} else {
-					$('#searchResults').html('');
-					$('#searchResults').hide(); // Ẩn phần tử searchResults nếu không có kết quả tìm kiếm
-				}
-			});
-		});
+
 	</script>
 </body>
 

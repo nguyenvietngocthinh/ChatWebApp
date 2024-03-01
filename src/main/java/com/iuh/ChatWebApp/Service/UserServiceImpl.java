@@ -44,7 +44,7 @@ public class UserServiceImpl {
 	    List<User> foundUsers = new ArrayList<>();
 	    // Tìm kiếm người dùng theo số điện thoại hoặc tên đầy đủ
 	    foundUsers.addAll(userRepository.findByPhoneNumberContainingIgnoreCase(searchText));
-	    foundUsers.addAll(userRepository.findByFullNameContainingIgnoreCase(searchText));
+//	    foundUsers.addAll(userRepository.findByFullNameContainingIgnoreCase(searchText));
 	    return foundUsers;
 	}
 }

@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.iuh.ChatWebApp.Service.UserServiceImpl;
@@ -179,12 +180,30 @@ public class UserController {
 	}
 
 
-	@GetMapping("/searchUsers")
-	public String searchUsers(@RequestParam("searchText") String searchText, Model model) {
-	    // Thực hiện tìm kiếm người dùng dựa trên searchText và lưu kết quả vào model
-	    List<User> searchResults = userService.searchUsers(searchText);
-	    model.addAttribute("searchResults", searchResults);
-	    // Trả về view để hiển thị kết quả tìm kiếm
-	    return "searchResults";
+	
+	// UserController.java
+
+	@GetMapping("/search")
+	public String searchUsers(@RequestParam("searchText") String searchText, Model model, HttpSession session) {
+	    // Lấy người dùng đã đăng nhập từ session
+	    User loggedInUser = (User) session.getAttribute("loggedInUser");
+
+	    // Kiểm tra xem người dùng đã đăng nhập hay chưa
+	    if (loggedInUser == null) {
+	        // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+	        return "redirect:/";
+	    }
+
+	    // Thực hiện tìm kiếm người dùng với searchText
+	    List<User> foundUsers = userService.searchUsers(searchText);
+
+	    // Thêm danh sách người dùng tìm được vào model để hiển thị trên trang
+	    model.addAttribute("foundUsers", foundUsers);
+
+	    // Trả về view hiển thị danh sách người dùng tìm được
+	    return "SearchResults";
 	}
+
+
+
 }
