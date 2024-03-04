@@ -137,9 +137,9 @@
 					</div>
 				</div>
 
-				<div class="list-group" id="searchResults">
-
-				</div>
+				<div class="list-group" id="searchResults"></div>
+				
+				<!-- Danh sach friend -->
 
 			</div>
 
@@ -256,7 +256,10 @@
 				// Lấy giá trị từ ô tìm kiếm
 				var searchText = $(this).val().trim();
 				// Gửi yêu cầu AJAX đến endpoint /search
-				$.ajax({
+				if(searchText == ""){
+					$("#searchResults").empty();
+				}else{
+					$.ajax({
 					url: "/search",
 					method: "GET",
 					data: {
@@ -270,6 +273,7 @@
 						console.error("Lỗi:", error);
 					}
 				});
+				}		
 			});
 		});
 		/**

@@ -197,12 +197,17 @@ public class UserController {
 	    // Thực hiện tìm kiếm người dùng với searchText
 	    List<User> foundUsers = userService.searchUsers(searchText);
 
+	    // Loại bỏ người dùng đang đăng nhập khỏi danh sách kết quả tìm kiếm
+	    foundUsers.removeIf(user -> user.getId() == loggedInUser.getId());
+
 	    // Thêm danh sách người dùng tìm được vào model để hiển thị trên trang
 	    model.addAttribute("foundUsers", foundUsers);
 
 	    // Trả về view hiển thị danh sách người dùng tìm được
 	    return "SearchResults";
 	}
+
+	
 
 
 
