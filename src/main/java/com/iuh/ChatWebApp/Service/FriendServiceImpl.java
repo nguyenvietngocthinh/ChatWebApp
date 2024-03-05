@@ -1,7 +1,13 @@
 package com.iuh.ChatWebApp.Service;
 
 import com.iuh.ChatWebApp.entity.Friend;
+import com.iuh.ChatWebApp.entity.User;
 import com.iuh.ChatWebApp.repository.FriendRepository;
+import com.iuh.ChatWebApp.repository.UserRepository;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -10,6 +16,9 @@ public class FriendServiceImpl {
 
     @Autowired
     private FriendRepository friendRepository;
+    
+    @Autowired
+    private UserRepository userRepository;
     
     public boolean isFriend(String phoneNumber1, String phoneNumber2) {
         // Kiểm tra xem có mối quan hệ bạn bè nào tồn tại giữa hai số điện thoại hay không
@@ -32,5 +41,19 @@ public class FriendServiceImpl {
                                  .build();
             friendRepository.save(friend);
         }
+    }
+    
+    public List<User> getFriendListByPhoneNumber(String phoneNumber) {
+        List<Friend> friends = friendRepository.findBySenderOrReceiver(phoneNumber, phoneNumber);
+        List<User> friendList = new ArrayList<>();
+        for (Friend friend : friends) {
+            String friendPhoneNumber = friend.getSender().equals(phoneNumber) ? friend.getReceiver() : friend.getSender();
+            // Lấy thông tin người dùng dựa trên số điện thoại của bạn bè
+            User friendUser = userRepository.findByPhoneNumber(friendPhoneNumber);
+            if (friendUser != null) {
+                friendList.add(friendUser);
+            }
+        }
+        return friendList;
     }
 }

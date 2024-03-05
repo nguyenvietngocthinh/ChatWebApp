@@ -77,19 +77,6 @@ public class UserServiceImpl {
     }
 
 	
-	public User findUserInSearchList(String searchText, String userPhoneNumber) {
-        List<User> foundUsers = searchUsers(searchText);
-        
-        // Lặp qua danh sách tìm kiếm để tìm user có số điện thoại giống với userPhoneNumber
-        for (User user : foundUsers) {
-            if (user.getPhoneNumber().equals(userPhoneNumber)) {
-                return user;
-            }
-        }
-        
-        // Trả về null nếu không tìm thấy user trong danh sách
-        return null;
-    }
 	
 	public boolean checkFriendship(String loggedInUserPhoneNumber, String targetUserPhoneNumber) {
 	    Friend existingFriendship1 = friendRepository.findBySenderAndReceiver(loggedInUserPhoneNumber, targetUserPhoneNumber);

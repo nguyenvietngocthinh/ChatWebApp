@@ -1,6 +1,7 @@
 package com.iuh.ChatWebApp.controller;
 
 import java.io.Console;
+import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.iuh.ChatWebApp.Service.FriendServiceImpl;
 import com.iuh.ChatWebApp.Service.UserServiceImpl;
 import com.iuh.ChatWebApp.entity.User;
 
@@ -25,6 +27,9 @@ public class UserController {
 	
 	@Autowired
 	private UserServiceImpl userService;
+	
+	@Autowired
+	private FriendServiceImpl friendService;
 	
 	@GetMapping("/")
     private String SignIn(HttpSession session) {
@@ -53,13 +58,20 @@ public class UserController {
     }
 	
     @GetMapping("/showFormHome")
-    private String HomePage(HttpSession session) {
+    private String HomePage(HttpSession session, Model model) {
         // Kiểm tra xem người dùng đã đăng nhập hay chưa
         if (session.getAttribute("loggedInUser") == null) {
             // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
             return "redirect:/";
         }
-        // Nếu đã đăng nhập, cho phép truy cập vào trang HomePage
+     // Lấy thông tin người dùng đã đăng nhập từ session
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        
+        // Lấy danh sách bạn bè của người dùng đã đăng nhập
+        List<User> friendList = friendService.getFriendListByPhoneNumber(loggedInUser.getPhoneNumber());
+        
+        // Đặt danh sách bạn bè vào model để sử dụng trong template
+        model.addAttribute("friendList", friendList);
         return "HomePage";
     }
     
