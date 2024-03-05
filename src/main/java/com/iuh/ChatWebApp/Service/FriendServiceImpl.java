@@ -11,23 +11,26 @@ public class FriendServiceImpl {
     @Autowired
     private FriendRepository friendRepository;
     
-    public boolean areFriends(String senderPhoneNumber, String receiverPhoneNumber) {
-        // Kiểm tra xem đã tồn tại mối quan hệ bạn bè ở cả hai hướng
-        boolean exists1 = friendRepository.existsBySenderAndReceiver(senderPhoneNumber, receiverPhoneNumber);
-        boolean exists2 = friendRepository.existsBySenderAndReceiver(receiverPhoneNumber, senderPhoneNumber);
-        
-        // Trả về true nếu đã là bạn bè ở một trong hai hướng, ngược lại trả về false
-        return exists1 || exists2;
+    public boolean isFriend(String phoneNumber1, String phoneNumber2) {
+        // Kiểm tra xem có mối quan hệ bạn bè nào tồn tại giữa hai số điện thoại hay không
+        return friendRepository.existsBySenderAndReceiver(phoneNumber1, phoneNumber2) ||
+                friendRepository.existsBySenderAndReceiver(phoneNumber2, phoneNumber1);
     }
 
+
     public void addFriend(String senderPhoneNumber, String receiverPhoneNumber) {
-       
+        // Kiểm tra xem đã tồn tại mối quan hệ bạn bè giữa hai số điện thoại hay chưa
+        Friend existingFriendship1 = friendRepository.findBySenderAndReceiver(senderPhoneNumber, receiverPhoneNumber);
+        Friend existingFriendship2 = friendRepository.findBySenderAndReceiver(receiverPhoneNumber, senderPhoneNumber);
+
+        if (existingFriendship1 == null && existingFriendship2 == null) {
+            // Nếu không tồn tại, thêm mối quan hệ bạn bè mới
             Friend friend = Friend.builder()
                                  .sender(senderPhoneNumber)
                                  .receiver(receiverPhoneNumber)
-                                 .status(false) // Mặc định status là false khi thêm bạn bè
+                                 .status(false)
                                  .build();
             friendRepository.save(friend);
-
+        }
     }
 }

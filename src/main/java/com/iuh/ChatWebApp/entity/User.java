@@ -35,4 +35,6 @@ public class User {
 	private boolean isOnline;
 	private boolean isAdmin;
 	
+	private String friendStatus;
+	
 }
