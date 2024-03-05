@@ -1,37 +1,33 @@
-package com.iuh.ChatWebApp.Service; 
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+package com.iuh.ChatWebApp.Service;
 
 import com.iuh.ChatWebApp.entity.Friend;
 import com.iuh.ChatWebApp.repository.FriendRepository;
-
-import java.util.List;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class FriendServiceImpl {
 
-	 @Autowired
-	    private FriendRepository friendRepository;
+    @Autowired
+    private FriendRepository friendRepository;
+    
+    public boolean areFriends(String senderPhoneNumber, String receiverPhoneNumber) {
+        // Kiểm tra xem đã tồn tại mối quan hệ bạn bè ở cả hai hướng
+        boolean exists1 = friendRepository.existsBySenderAndReceiver(senderPhoneNumber, receiverPhoneNumber);
+        boolean exists2 = friendRepository.existsBySenderAndReceiver(receiverPhoneNumber, senderPhoneNumber);
+        
+        // Trả về true nếu đã là bạn bè ở một trong hai hướng, ngược lại trả về false
+        return exists1 || exists2;
+    }
 
-	    // Kiểm tra sự tồn tại của mối quan hệ
-	    public boolean existsFriendRelation(String sender, String receiver) {
-	        return friendRepository.existsBySenderAndReceiver(sender, receiver);
-	    }
+    public void addFriend(String senderPhoneNumber, String receiverPhoneNumber) {
+       
+            Friend friend = Friend.builder()
+                                 .sender(senderPhoneNumber)
+                                 .receiver(receiverPhoneNumber)
+                                 .status(false) // Mặc định status là false khi thêm bạn bè
+                                 .build();
+            friendRepository.save(friend);
 
-	    // Lưu mối quan hệ bạn bè mới
-	    public void saveFriendRelation(Friend friend) {
-	        friendRepository.save(friend);
-	    }
-
-	    // Lấy danh sách bạn bè dựa trên sender và receiver
-	    public List<Friend> getFriendList(String sender, String receiver) {
-	        return friendRepository.findBySenderAndReceiver(sender, receiver);
-	    }
-
-	    // Xóa mối quan hệ bạn bè
-	    public void deleteFriendRelation(Friend friend) {
-	        friendRepository.delete(friend);
-	    }
-
+    }
 }

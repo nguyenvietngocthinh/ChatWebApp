@@ -35,6 +35,4 @@ public class User {
 	private boolean isOnline;
 	private boolean isAdmin;
 	
-
-	
 }

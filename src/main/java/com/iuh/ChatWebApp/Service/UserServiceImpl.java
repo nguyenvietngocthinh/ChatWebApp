@@ -34,6 +34,8 @@ public class UserServiceImpl {
 		}
 		return "Đăng ký thành công";
 	}
+	
+	
 
 	public User findByPhoneNumberAndPassword(String phoneNumber, String password) {
 		return userRepository.findByPhoneNumberAndPassword(phoneNumber, password);
@@ -47,4 +49,25 @@ public class UserServiceImpl {
 //	    foundUsers.addAll(userRepository.findByFullNameContainingIgnoreCase(searchText));
 	    return foundUsers;
 	}
+	
+	public User findUserByPhoneNumber(String phoneNumber) {
+        return userRepository.findByPhoneNumber(phoneNumber);
+    }
+
+	
+	public User findUserInSearchList(String searchText, String userPhoneNumber) {
+        List<User> foundUsers = searchUsers(searchText);
+        
+        // Lặp qua danh sách tìm kiếm để tìm user có số điện thoại giống với userPhoneNumber
+        for (User user : foundUsers) {
+            if (user.getPhoneNumber().equals(userPhoneNumber)) {
+                return user;
+            }
+        }
+        
+        // Trả về null nếu không tìm thấy user trong danh sách
+        return null;
+    }
+
+
 }

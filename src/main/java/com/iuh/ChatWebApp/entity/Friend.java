@@ -22,9 +22,7 @@ public class Friend {
 	@Id
 	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private int id;
-	
-	
-	
+
 	private String sender;
 	private String receiver;
 	private String owner;
