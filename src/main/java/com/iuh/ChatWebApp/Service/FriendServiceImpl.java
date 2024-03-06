@@ -48,12 +48,38 @@ public class FriendServiceImpl {
         List<User> friendList = new ArrayList<>();
         for (Friend friend : friends) {
             String friendPhoneNumber = friend.getSender().equals(phoneNumber) ? friend.getReceiver() : friend.getSender();
-            // Lấy thông tin người dùng dựa trên số điện thoại của bạn bè
             User friendUser = userRepository.findByPhoneNumber(friendPhoneNumber);
             if (friendUser != null) {
+                // So sánh friendUser với vai trò là sender
+                if (friend.getSender().equals(phoneNumber)) {
+                    friendUser.setRole("sender");
+                } else {
+                    friendUser.setRole("receiver");
+                }
                 friendList.add(friendUser);
             }
         }
         return friendList;
     }
+    
+    public void acceptFriendRequest(String senderPhoneNumber, String receiverPhoneNumber) {
+        // Tìm mối quan hệ bạn bè với senderPhoneNumber và receiverPhoneNumber
+        Friend friendship = friendRepository.findBySenderAndReceiver(senderPhoneNumber, receiverPhoneNumber);
+        
+        if (friendship != null) {
+            // Đặt trạng thái của mối quan hệ bạn bè thành true
+            friendship.setStatus(true);
+            friendRepository.save(friendship);
+        }
+    }
+
+    public void cancelFriendRequest(String senderPhoneNumber, String receiverPhoneNumber) {
+        // Kiểm tra xem yêu cầu kết bạn đã tồn tại hay chưa
+        Friend existingFriendship = friendRepository.findBySenderAndReceiver(senderPhoneNumber, receiverPhoneNumber);
+        if (existingFriendship != null) {
+            // Nếu tồn tại, xóa yêu cầu kết bạn
+            friendRepository.delete(existingFriendship);
+        }
+    }
+
 }

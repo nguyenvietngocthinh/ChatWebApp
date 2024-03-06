@@ -16,6 +16,12 @@ public interface FriendRepository extends JpaRepository<Friend, Integer> {
 
 	List<Friend> findBySenderOrReceiver(String phoneNumber, String phoneNumber2);
 
+	List<Friend> findBySender(String phoneNumber);
+
+	List<Friend> findByReceiver(String phoneNumber);
+
+	void deleteBySenderAndReceiver(String senderPhoneNumber, String receiverPhoneNumber);
+
 	
 
 }

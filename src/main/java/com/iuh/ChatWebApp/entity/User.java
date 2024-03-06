@@ -35,6 +35,9 @@ public class User {
 	private boolean isOnline;
 	private boolean isAdmin;
 	
+	@Transient
 	private String friendStatus;
+	@Transient
+	private String role;
 	
 }

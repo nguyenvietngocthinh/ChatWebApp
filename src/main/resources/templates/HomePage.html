@@ -139,22 +139,47 @@
 
 				<div class="list-group" id="searchResults"></div>
 
-				 <div class="list-group" id="friendList">
-            <!-- Hiển thị danh sách bạn bè ở đây -->
-            <!-- Sử dụng Thymeleaf để lặp qua danh sách bạn bè và hiển thị từng người dùng -->
-            <div th:each="friend : ${friendList}">
-                <a th:href="@{'/user/' + ${friend.id}}" class="list-group-item list-group-item-action border-0">
-                    <div class="d-flex align-items-start">
-                        <img th:src="@{${friend.avatar}}" class="rounded-circle mr-1" alt="Avatar" width="40" height="40">
-                        <div class="flex-grow-1 ml-3">
-                            <span th:text="${friend.fullName}"></span>
-                            <!-- Các thông tin khác về bạn bè có thể thêm vào đây -->
-                        </div>
-                    </div>
-                </a>
-            </div>
-        </div>
-				
+				<div class="list-group" id="friendList">
+					<!-- Hiển thị danh sách bạn bè ở đây -->
+					<!-- Sử dụng Thymeleaf để lặp qua danh sách bạn bè và hiển thị từng người dùng -->
+					<div th:each="friend : ${friendList}">
+						<a class="list-group-item list-group-item-action border-0">
+							<div class="d-flex align-items-start">
+
+								<img th:src="@{${friend.avatar}}" class="rounded-circle mr-1" alt="Avatar" width="40"
+									height="40">
+								<div class="flex-grow-1 ml-3">
+
+									<!-- Các thông tin khác về bạn bè có thể thêm vào đây -->
+									<p th:text=" ${friend.fullName}"></p>
+									<div class="small">
+										<span class="fas fa-circle"
+											th:class="${friend.online} ? 'chat-online' : 'chat-offline'"></span>
+										<span th:text="${friend.online} ? 'Online' : 'Offline'"></span>
+
+									</div>
+
+								</div>
+								<div th:if="${friend.role == 'receiver'}" class="d-flex flex-column">
+
+									<form action="/acceptFriendRequest" method="post">
+										<input type="hidden" name="senderPhoneNumber" th:value="${friend.phoneNumber}">
+										<button type="submit" class="btn btn-success">✓</button>
+									</form>
+									<form action="/cancelFriendRequest" method="post">
+										<input type="hidden" name="senderPhoneNumber"
+											th:value="${friend.phoneNumber}">
+										<button type="submit" class="btn btn-danger">X</button>
+									</form>
+									
+
+								</div>
+
+							</div>
+						</a>
+					</div>
+				</div>
+
 
 
 			</div>
@@ -292,6 +317,8 @@
 				}
 			});
 		});
+
+
 
 
 		/**

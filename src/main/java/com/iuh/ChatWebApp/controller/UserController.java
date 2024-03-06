@@ -64,7 +64,7 @@ public class UserController {
             // Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
             return "redirect:/";
         }
-     // Lấy thông tin người dùng đã đăng nhập từ session
+        // Lấy thông tin người dùng đã đăng nhập từ session
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         
         // Lấy danh sách bạn bè của người dùng đã đăng nhập
@@ -72,6 +72,7 @@ public class UserController {
         
         // Đặt danh sách bạn bè vào model để sử dụng trong template
         model.addAttribute("friendList", friendList);
+        
         return "HomePage";
     }
     
