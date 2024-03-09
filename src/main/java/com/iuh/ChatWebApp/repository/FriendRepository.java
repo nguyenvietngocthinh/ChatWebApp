@@ -23,5 +23,6 @@ public interface FriendRepository extends JpaRepository<Friend, Integer> {
 	void deleteBySenderAndReceiver(String senderPhoneNumber, String receiverPhoneNumber);
 
 	
+	
 
 }

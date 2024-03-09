@@ -1,12 +1,18 @@
 package com.iuh.ChatWebApp.controller;
 
 import java.io.Console;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.StringUtils;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +21,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.iuh.ChatWebApp.Service.FriendServiceImpl;
 import com.iuh.ChatWebApp.Service.UserServiceImpl;
@@ -104,10 +111,17 @@ public class UserController {
 	    if (messageFail.equals("Bị trùng số điện thoại")) {
 	        return "SignUp";
 	    }else {
+	    	if (user.getGender().equalsIgnoreCase("male")) {
+	            user.setAvatar("nam.jpg");
+	        } else if (user.getGender().equalsIgnoreCase("female")) {
+	            user.setAvatar("nu.jpg");
+	        }
 	    	
 	    	// Nếu số điện thoại chưa tồn tại, lưu người dùng mới và thông báo thành công
 		    String message = userService.saveUser(user);
 		    session.setAttribute("message", message);
+		    
+		    
 
 		    if (message.equals("Đăng ký thành công")) {
 		        return "redirect:/";
@@ -163,7 +177,7 @@ public class UserController {
 	
 	@PostMapping("/update")
 	public String updateUser(@ModelAttribute @Validated User updatedUser, BindingResult bindingResult,
-	                         HttpSession session, Model model) {
+			 @RequestParam("avatar") MultipartFile avatarFile,HttpSession session, Model model) {
 	    // Lấy thông tin người dùng đã đăng nhập từ session
 	    User loggedInUser = (User) session.getAttribute("loggedInUser");
 
@@ -179,14 +193,50 @@ public class UserController {
 	        model.addAttribute("loggedInUser", loggedInUser);
 	        return "EditProfile";
 	    }
+	    
+	 // Cập nhật thông tin người dùng từ dữ liệu mới được gửi từ form
+	    if(updatedUser.getFullName()== "") {
+	    	 loggedInUser.setGender(updatedUser.getGender());
+		 	    loggedInUser.setDob(updatedUser.getDob());
+	    }else {
+	    	 loggedInUser.setFullName(updatedUser.getFullName());
+	 	    loggedInUser.setGender(updatedUser.getGender());
+	 	    loggedInUser.setDob(updatedUser.getDob());
+	    }
 
-	    // Cập nhật thông tin người dùng từ dữ liệu mới được gửi từ form
-	    loggedInUser.setFullName(updatedUser.getFullName());
-	    loggedInUser.setGender(updatedUser.getGender());
-	    loggedInUser.setDob(updatedUser.getDob());
+	    
+	   
 
-	    // Lưu thông tin người dùng sau khi cập nhật
-	    userService.saveUser(loggedInUser);
+	    // Kiểm tra xem người dùng đã upload avatar mới hay chưa
+	    if (!avatarFile.isEmpty()) {
+	        try {
+	            // Đường dẫn tới thư mục lưu trữ ảnh
+	            String uploadDir = "public/images/";
+
+	            // Tạo đường dẫn đầy đủ tới file ảnh trên server
+	            Path uploadPath = Paths.get(uploadDir);
+
+	            // Đảm bảo thư mục tồn tại, nếu không, tạo mới
+	            if (!Files.exists(uploadPath)) {
+	                Files.createDirectories(uploadPath);
+	            }
+
+	            // Lấy tên file gốc
+	            String fileName = StringUtils.cleanPath(avatarFile.getOriginalFilename());
+
+	            // Lưu file vào thư mục lưu trữ
+	            Path filePath = uploadPath.resolve(fileName);
+	            Files.copy(avatarFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+	            // Cập nhật đường dẫn avatar mới vào thông tin người dùng
+	            loggedInUser.setAvatar(fileName);
+	            userService.saveUser(loggedInUser);
+
+	        } catch (IOException e) {
+	            e.printStackTrace();
+	            // Xử lý khi có lỗi xảy ra trong quá trình lưu file
+	        }
+	    }
 
 	    // Chuyển hướng về trang chính sau khi cập nhật thành công
 	    return "redirect:/showFormHome";

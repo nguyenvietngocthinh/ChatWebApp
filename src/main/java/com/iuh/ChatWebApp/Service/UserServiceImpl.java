@@ -59,6 +59,8 @@ public class UserServiceImpl {
 	        // Kiểm tra xem có mối quan hệ bạn bè giữa người dùng hiện tại và người dùng trong danh sách tìm kiếm không
 	        Friend existingFriendship1 = friendRepository.findBySenderAndReceiver(loggedInUserPhoneNumber, user.getPhoneNumber());
 	        Friend existingFriendship2 = friendRepository.findBySenderAndReceiver(user.getPhoneNumber(), loggedInUserPhoneNumber);
+	        
+	        
 	        if (existingFriendship1 != null || existingFriendship2 != null) {
 	            // Nếu đã là bạn bè, đặt trạng thái là "Đã gửi"
 	            user.setFriendStatus("Đã gửi");
