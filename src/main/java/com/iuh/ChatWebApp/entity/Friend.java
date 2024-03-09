@@ -27,4 +27,6 @@ public class Friend {
 	private String receiver;
 	private String owner;
 	private boolean status;
+	
+	
 }

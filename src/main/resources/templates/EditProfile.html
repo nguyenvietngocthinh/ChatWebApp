@@ -75,7 +75,7 @@
 
 <body>
 	<div class="container">
-		<form th:object="${user}" th:action="@{/update}" method="post" enctype="multipart/form-data">
+		<form th:object="${user}" th:action="@{/update}" method="post">
 			<div class="row gutters">
 				<div class="col-xl-3 col-lg-3 col-md-12 col-sm-12 col-12">
 					<div class="card h-100">
@@ -88,7 +88,7 @@
 									<h5 class="user-name" th:text="${loggedInUser.fullName}"></h5>
 								</div>
 								<div class="about">
-									<input type="file" class="form-control-file" id="avatar" name="avatar">
+									<input type="file" class="form-control-file">
 
 								</div>
 							</div>
@@ -104,8 +104,8 @@
 								</div>
 								<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
 									<div class="form-group">
-										<label for="phoneNumber">Số điện thoại</label>
-										<input type="text" class="form-control" th:value="${loggedInUser.phoneNumber}"
+										<label for="exampleInputPhoneNumber1">Số điện thoại</label>
+										<input type="text" class="form-control" id="exampleInputPhoneNumber1" th:value="${loggedInUser.phoneNumber}"
 											readonly>
 									</div>
 								</div>
@@ -144,7 +144,7 @@
 									<!-- Ngay sinh -->
 									<div class="form-group">
 										<label for="exampleInputDOB">Ngày Sinh</label>
-										<input type="date" class="form-control" required name="dob"
+										<input type="date" class="form-control" required name="dob" id="exampleInputDOB"
 											th:value="${loggedInUser.dob}">
 									</div>
 								</div>
@@ -164,21 +164,22 @@
 				</div>
 		</form>
 	</div>
-	<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script>
+
 	<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
-		// Lấy ngày hiện tại
-		var today = new Date();
-		// Giảm 18 năm từ ngày hiện tại
-		var maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-		// Chuyển định dạng ngày thành chuỗi "YYYY-MM-DD"
-		var formattedDate = maxDate.toLocaleDateString('en-CA');
-		// Đặt giá trị max cho trường ngày sinh
-		document.getElementById("exampleInputDOB").max = formattedDate;
+    document.addEventListener("DOMContentLoaded", function() {
+        // Lấy ngày hiện tại
+        var today = new Date();
+        // Giảm 18 năm từ ngày hiện tại
+        var maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+        // Chuyển định dạng ngày thành chuỗi "YYYY-MM-DD"
+        var formattedDate = maxDate.toLocaleDateString('en-CA');
+        // Đặt giá trị max cho trường ngày sinh
+        document.getElementById("exampleInputDOB").max = formattedDate;
+    });
+</script>
 
-
-	</script>
 </body>
 
 </html>

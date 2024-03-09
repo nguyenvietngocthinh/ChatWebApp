@@ -1,6 +1,8 @@
 package com.iuh.ChatWebApp.entity;
 
 
+import org.springframework.web.multipart.MultipartFile;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -39,5 +41,6 @@ public class User {
 	private String friendStatus;
 	@Transient
 	private String role;
+	
 	
 }

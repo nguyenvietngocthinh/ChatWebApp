@@ -177,7 +177,7 @@ public class UserController {
 	
 	@PostMapping("/update")
 	public String updateUser(@ModelAttribute @Validated User updatedUser, BindingResult bindingResult,
-			 @RequestParam("avatar") MultipartFile avatarFile,HttpSession session, Model model) {
+			 HttpSession session, Model model) {
 	    // Lấy thông tin người dùng đã đăng nhập từ session
 	    User loggedInUser = (User) session.getAttribute("loggedInUser");
 
@@ -205,39 +205,7 @@ public class UserController {
 	    }
 
 	    
-	   
-
-	    // Kiểm tra xem người dùng đã upload avatar mới hay chưa
-	    if (!avatarFile.isEmpty()) {
-	        try {
-	            // Đường dẫn tới thư mục lưu trữ ảnh
-	            String uploadDir = "public/images/";
-
-	            // Tạo đường dẫn đầy đủ tới file ảnh trên server
-	            Path uploadPath = Paths.get(uploadDir);
-
-	            // Đảm bảo thư mục tồn tại, nếu không, tạo mới
-	            if (!Files.exists(uploadPath)) {
-	                Files.createDirectories(uploadPath);
-	            }
-
-	            // Lấy tên file gốc
-	            String fileName = StringUtils.cleanPath(avatarFile.getOriginalFilename());
-
-	            // Lưu file vào thư mục lưu trữ
-	            Path filePath = uploadPath.resolve(fileName);
-	            Files.copy(avatarFile.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
-
-	            // Cập nhật đường dẫn avatar mới vào thông tin người dùng
-	            loggedInUser.setAvatar(fileName);
-	            userService.saveUser(loggedInUser);
-
-	        } catch (IOException e) {
-	            e.printStackTrace();
-	            // Xử lý khi có lỗi xảy ra trong quá trình lưu file
-	        }
-	    }
-
+	    userService.saveUser(loggedInUser);
 	    // Chuyển hướng về trang chính sau khi cập nhật thành công
 	    return "redirect:/showFormHome";
 	}

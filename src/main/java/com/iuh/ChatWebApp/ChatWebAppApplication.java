@@ -1,4 +1,4 @@
-package com.iuh.ChatWebApp;
+ package com.iuh.ChatWebApp;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

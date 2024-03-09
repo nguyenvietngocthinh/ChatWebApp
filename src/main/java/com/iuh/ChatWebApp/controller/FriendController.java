@@ -46,7 +46,9 @@ public class FriendController {
 
 		// Gọi phương thức để chấp nhận lời mời kết bạn
 		friendService.acceptFriendRequest(friendPhoneNumber, loggedInUser.getPhoneNumber());
-
+		
+		
+		System.out.println(loggedInUser.getRole());
 		return "redirect:/showFormHome";
 	}
 
