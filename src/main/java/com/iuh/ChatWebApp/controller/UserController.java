@@ -106,7 +106,7 @@ public class UserController {
 	                       HttpSession session, Model model) {
 	
 	    // Kiểm tra xem số điện thoại đã tồn tại trong hệ thống hay chưa
-	    String messageFail = userService.findByPhoneNumber(user.getPhoneNumber());
+	    String messageFail = userService.findByPhoneNumberExist(user.getPhoneNumber());
 	    session.setAttribute("messageFail", messageFail);
 	    if (messageFail.equals("Bị trùng số điện thoại")) {
 	        return "SignUp";

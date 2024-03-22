@@ -19,6 +19,9 @@ public class FriendServiceImpl {
 
 	@Autowired
 	private UserRepository userRepository;
+	
+	@Autowired
+    private ChatRoomServiceImpl chatRoomServiceImpl;
 
 	public boolean isFriend(String phoneNumber1, String phoneNumber2) {
 		// Kiểm tra xem có mối quan hệ bạn bè nào tồn tại giữa hai số điện thoại hay
@@ -72,6 +75,9 @@ public class FriendServiceImpl {
 			// Đặt trạng thái của mối quan hệ bạn bè thành true
 			friendship.setStatus(true);
 			friendRepository.save(friendship);
+			
+			// Tạo chatId và lưu thông tin phòng chat vào cơ sở dữ liệu
+	        String chatId = chatRoomServiceImpl.createChatId(senderPhoneNumber, receiverPhoneNumber);
 		}
 	}
 

@@ -33,7 +33,7 @@ public class UserServiceImpl {
     }
 
     //kiem tra trung sdt
-	public String findByPhoneNumber(String phoneNumber) {
+	public String findByPhoneNumberExist(String phoneNumber) {
 		if(userRepository.existsByPhoneNumber(phoneNumber) == true) {
 			return "Bị trùng số điện thoại";
 		}
