@@ -8,6 +8,7 @@ import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.security.Principal;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -23,6 +24,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.iuh.ChatWebApp.Service.ChatRoomServiceImpl;
 import com.iuh.ChatWebApp.Service.FriendServiceImpl;
 import com.iuh.ChatWebApp.Service.UserServiceImpl;
 import com.iuh.ChatWebApp.entity.User;
@@ -37,6 +39,9 @@ public class UserController {
 	
 	@Autowired
 	private FriendServiceImpl friendService;
+	
+	 @Autowired
+	    private ChatRoomServiceImpl chatRoomService;
 	
 	@GetMapping("/")
     private String SignIn(HttpSession session) {
@@ -75,7 +80,7 @@ public class UserController {
         User loggedInUser = (User) session.getAttribute("loggedInUser");
         
         // Lấy danh sách bạn bè của người dùng đã đăng nhập
-        List<User> friendList = friendService.getFriendListByPhoneNumber(loggedInUser.getPhoneNumber());
+        List<User> friendList = friendService.getFriendListByPhoneNumber(loggedInUser.getPhoneNumber());  
         
         // Đặt danh sách bạn bè vào model để sử dụng trong template
         model.addAttribute("friendList", friendList);
@@ -235,9 +240,8 @@ public class UserController {
 	    return "SearchResults";
 	}
 
-
 	
 
-
+	
 
 }

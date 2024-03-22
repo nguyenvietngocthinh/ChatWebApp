@@ -19,7 +19,7 @@ public class ChatMessageServiceImpl {
 
     public ChatMessage save(ChatMessage chatMessage) {
         var chatId = chatRoomServiceImpl
-                .getChatRoomId(chatMessage.getSenderId(), chatMessage.getReceivertId(), true)
+                .getChatRoomId(chatMessage.getSenderId(), chatMessage.getReceiverId(), true)
                 .orElseThrow(); // You can create your own dedicated exception
         chatMessage.setChatId(chatId);
         repository.save(chatMessage);

@@ -20,7 +20,7 @@ public class ChatRoomServiceImpl {
 				var chatId = createChatId(senderId, receiverId);
 				return Optional.of(chatId);
 			}
-
+			
 			return Optional.empty();
 		});
 	}

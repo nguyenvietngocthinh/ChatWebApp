@@ -42,6 +42,7 @@ public class FriendServiceImpl {
 			friendRepository.save(friend);
 		}
 	}
+	
 
 	public List<User> getFriendListByPhoneNumber(String phoneNumber) {
 		List<Friend> friends = friendRepository.findBySenderOrReceiver(phoneNumber, phoneNumber);
