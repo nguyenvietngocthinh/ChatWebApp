@@ -25,54 +25,59 @@ import jakarta.servlet.http.HttpSession;
 
 @Controller
 public class ChatController {
-	  @Autowired
-	  private ChatMessageServiceImpl chatMessageServiceImpl;
-	  
-	  @Autowired
-	  private ChatRoomServiceImpl chatRoomServiceImpl;
-	  
-	  @Autowired
-		private UserServiceImpl userService;
-	  
-	  @Autowired
-	  private SimpMessagingTemplate messagingTemplate;
-	  
-	  @GetMapping("/getChatRoom")
-	    public String getChatRoom(@RequestParam("senderPhoneNumber") String friendPhoneNumber, Model model, HttpSession session) {
-		  User loggedInUser = (User) session.getAttribute("loggedInUser");
-		  
-	        Optional<String> chatRoomId = chatRoomServiceImpl.getChatRoomId(loggedInUser.getPhoneNumber(), friendPhoneNumber);
-	        if (chatRoomId.isPresent()) {
-	        	User chatFriendUser = userService.findUserByPhoneNumber(friendPhoneNumber);
-	        	
-	        	model.addAttribute("chatFriendUser", chatFriendUser);
-	        	 model.addAttribute("loggedInUser", loggedInUser);
-	            return "Chat";
-	        } else {
-	            return "showFormHome";
-	        }
-	    }
+	@Autowired
+	private ChatMessageServiceImpl chatMessageServiceImpl;
 
-	    @MessageMapping("/chat")
-	    public void processMessage(@Payload ChatMessage chatMessage) {
-	        ChatMessage savedMsg = chatMessageServiceImpl.save(chatMessage);
-	        messagingTemplate.convertAndSendToUser(
-	                chatMessage.getReceiverId(), "/queue/messages",
-	                new ChatNotification(
-	                        savedMsg.getId(),
-	                        savedMsg.getSenderId(),
-	                        savedMsg.getReceiverId(),
-	                        savedMsg.getContent()
-	                )
-	        );
-	    }
+	@Autowired
+	private ChatRoomServiceImpl chatRoomServiceImpl;
 
-	    @GetMapping("/messages/{senderId}/{receiverId}")
-	    public ResponseEntity<List<ChatMessage>> findChatMessages(@PathVariable String senderId,
-	                                                 @PathVariable String receiverId) {
-	    	
-	        return ResponseEntity
-	                .ok(chatMessageServiceImpl.findChatMessages(senderId, receiverId));
-	    }
+	@Autowired
+	private UserServiceImpl userService;
+
+	@Autowired
+	private SimpMessagingTemplate messagingTemplate;
+
+	@GetMapping("/getChatRoom")
+	public String getChatRoom(@RequestParam("senderPhoneNumber") String friendPhoneNumber, Model model,
+			HttpSession session) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+
+		Optional<String> chatRoomId = chatRoomServiceImpl.getChatRoomId(loggedInUser.getPhoneNumber(),
+				friendPhoneNumber);
+		if (chatRoomId.isPresent()) {
+			User chatFriendUser = userService.findUserByPhoneNumber(friendPhoneNumber);
+
+			model.addAttribute("chatFriendUser", chatFriendUser);
+			model.addAttribute("loggedInUser", loggedInUser);
+			return "Chat";
+		} else {
+			return "showFormHome";
+		}
+	}
+
+	@MessageMapping("/chat")
+	public void processMessage(@Payload ChatMessage chatMessage) {
+		ChatMessage savedMsg = chatMessageServiceImpl.save(chatMessage);
+
+	    messagingTemplate.convertAndSendToUser(
+	        chatMessage.getReceiverId(), "/queue/messages",
+	        new ChatNotification(
+	            savedMsg.getId(),
+	            savedMsg.getSenderId(),
+	            savedMsg.getReceiverId(),
+	            savedMsg.getContent()
+	        )
+	    );
+	
+	}
+	
+	
+
+	@GetMapping("/messages/{senderId}/{receiverId}")
+	public ResponseEntity<List<ChatMessage>> findChatMessages(@PathVariable String senderId,
+			@PathVariable String receiverId) {
+
+		return ResponseEntity.ok(chatMessageServiceImpl.findChatMessages(senderId, receiverId));
+	}
 
 }

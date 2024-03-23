@@ -3,7 +3,7 @@
 
 <head>
 	<meta charset="UTF-8">
-	<title>Insert title here</title>
+	<title>Chat History</title>
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
@@ -19,6 +19,7 @@
 			flex-grow: 1;
 			overflow-y: auto;
 			border-left: 1px solid #eaeaea;
+
 		}
 
 		.chat-app .chat .chat-header,
@@ -46,6 +47,43 @@
 
 		.hidden {
 			display: none;
+		}
+
+		.chat-history {
+			flex-grow: 1;
+			overflow-y: auto;
+			padding: 10px;
+			height: calc(100vh - 120px);
+			/* Thêm chiều cao để cuộn tự động */
+		}
+
+		.chat-message {
+			margin-bottom: 20px;
+			display: flex;
+			flex-direction: column;
+			align-items: flex-start;
+			overflow-y: auto;
+		}
+
+		.chat-message.mine {
+			align-items: flex-end;
+		}
+
+		.chat-message .sender {
+			font-weight: bold;
+			margin-bottom: 5px;
+		}
+
+		.chat-message .content {
+			background-color: white;
+			padding: 10px;
+			border-radius: 10px;
+			max-width: 70%;
+		}
+
+		.chat-message.mine .content {
+			background-color: #007bff;
+			color: #fff;
 		}
 	</style>
 </head>
@@ -96,12 +134,10 @@
 				</div>
 			</div>
 		</div>
-		<!-- Nội dung trò chuyện -->
+
 	</div>
-	<div th:each="message : ${chatMessages}">
-		<!-- Hiển thị nội dung tin nhắn -->
-		<div th:text="${message.content}"></div>
-		<!-- Các thông tin khác về tin nhắn như thời gian, người gửi, người nhận có thể được thêm vào đây -->
+	<div class="chat-history" id="message-container">
+		<!-- Lịch sử tin nhắn sẽ được hiển thị ở đây -->
 	</div>
 
 	<div class="fixed-bottom-input">
@@ -117,6 +153,7 @@
 					<button class="btn btn-light" type="button">
 						<i class="material-icons">sentiment_satisfied_alt</i>
 					</button>
+
 				</div>
 			</div>
 			<input type="text" class="form-control mx-2" placeholder="Type your message">
@@ -129,16 +166,74 @@
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-
 
 	<!-- Trong JavaScript -->
 	<script type="text/javascript">
 
+		
+		$(window).on('resize', function () {
+			var chatHistoryHeight = $(window).height() - $('.chat-header').outerHeight() - $('.fixed-bottom-input').outerHeight();
+			$('.chat-history').css('height', chatHistoryHeight + 'px');
+		});
+
+		function connect() {
+			var socket = new SockJS('/ws');
+			stompClient = Stomp.over(socket);
+
+			// Sự kiện khi kết nối WebSocket được mở thành công
+			stompClient.connect({}, function (frame) {
+				console.log('Connected:');
+				console.log(frame); // Hiển thị thông tin frame
+				console.log('WebSocket connection opened successfully.');
+
+				// Gọi hàm để xử lý khi kết nối được mở thành công
+				onConnected();
+				
+				var receiverId = $("input[name='loggedInUserPhoneNumber']").val();
+
+				stompClient.subscribe('/user/' + receiverId  + '/queue/messages', function (message) {
+					// Hiển thị tin nhắn mới trong message-container
+					showMessage(JSON.parse(message.body));
+				});
+
+			}, function (error) {
+				// Sự kiện khi có lỗi xảy ra khi kết nối WebSocket
+				console.error('WebSocket error: ' + error);
+			});
+		}
+
+
+		// Hàm được gọi khi kết nối WebSocket được mở thành công
+		function onConnected() {
+			console.log('WebSocket connection opened successfully.');
+
+			// Thực hiện các hành động cần thiết khi kết nối được mở
+		}
+
+		// Hàm được gọi khi kết nối WebSocket bị đóng
+		function onDisconnected() {
+			console.log('WebSocket connection closed.');
+
+			// Thực hiện các hành động cần thiết khi kết nối bị đóng
+		}
+
+
+		function showMessage(message) {
+			appendNewMessageToUI(message);
+		}
+
+
 		$(document).ready(function () {
 			// Gọi hàm connect() khi trang đã tải hoàn toàn
 			connect();
+			// Gọi hàm truy xuất lịch sử tin nhắn khi trang được tải hoàn toàn
+			$(document).ready(function () {
+				var senderId = $("input[name='loggedInUserPhoneNumber']").val();
+				var receiverId = $("input[name='chatFriendUser']").val();
+				fetchMessageHistory(senderId, receiverId);
+
+			});
 
 			// Bắt sự kiện khi nút "Send" được nhấn
 			$(".btn-primary").click(function () {
@@ -149,33 +244,19 @@
 					console.error("stompClient is not defined. Please make sure to call connect() first.");
 				}
 			});
-		});
 
-		function connect() {
-			var socket = new SockJS('/ws');
-			stompClient = Stomp.over(socket);
-			stompClient.connect({}, function (frame) {
-				console.log('Connected: ' + frame);
-				stompClient.subscribe('/topic/messages', function (message) {
-					showMessage(JSON.parse(message.body));
-				});
-			});
-		}
-
-		$(document).ready(function () {
 			// Lắng nghe sự kiện khi nút "Send" được nhấn
 			$(".fixed-bottom-input .btn-primary").click(function () {
 				// Lấy nội dung tin nhắn từ ô input
 				var messageContent = $(".fixed-bottom-input input").val().trim();
 
-
 				var loggedInUserPhoneNumber = $("input[name='loggedInUserPhoneNumber']").val();
 				var chatFriendUserPhoneNumber = $("input[name='chatFriendUser']").val();
-
 
 				if (messageContent !== "") {
 					var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
 					$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
+
 					// Tạo đối tượng tin nhắn để gửi lên server
 					var chatMessage = {
 						senderId: loggedInUserPhoneNumber,
@@ -186,11 +267,43 @@
 
 					// Gửi tin nhắn lên server thông qua WebSocket
 					stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
+					console.log("Tin nhắn đã được gửi:", chatMessage);
+
+					// Hiển thị tin nhắn ngay sau khi gửi
+					showMessage(chatMessage);
+
 					// Xóa nội dung tin nhắn khỏi ô input sau khi gửi
 					$(".fixed-bottom-input input").val("");
 				}
 			});
 		});
+
+		// Hàm để truy xuất lịch sử tin nhắn từ máy chủ
+		function fetchMessageHistory(senderId, receiverId) {
+			$.get("/messages/" + senderId + "/" + receiverId, function (data) {
+				data.forEach(function (message) {
+					// Hiển thị tin nhắn trong message-container
+					appendNewMessageToUI(message);
+				});
+			});
+		}
+
+		// Bổ sung tin nhắn mới vào đầu danh sách trong giao diện sau khi gửi tin nhắn
+		function appendNewMessageToUI(message) {
+			var chatContainer = $("#message-container");
+			var messageClass = message.senderId === $("input[name='loggedInUserPhoneNumber']").val() ? "mine" : "other";
+
+			var messageDiv = '<div class="chat-message ' + messageClass + '">' +
+				'<div class="content">' + message.content + '</div>' +
+				'</div>';
+			chatContainer.append(messageDiv);
+
+
+			chatContainer.scrollTop(chatContainer[0].scrollHeight);
+
+
+		}
+
 
 
 	</script>

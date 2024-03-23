@@ -120,8 +120,8 @@
 					<div th:each="friend : ${friendList}">
 						<a class="list-group-item list-group-item-action border-0">
 							<div class="d-flex align-items-start">
-								<img th:src="@{'images/' + ${friend.avatar}}" class="rounded-circle mr-1"
-									width="40" height="40">
+								<img th:src="@{'images/' + ${friend.avatar}}" class="rounded-circle mr-1" width="40"
+									height="40">
 								<div class="flex-grow-1 ml-3">
 									<!-- Các thông tin khác về bạn bè có thể thêm vào đây -->
 									<p id="fullNameFriend" th:text=" ${friend.fullName}"></p>
@@ -129,6 +129,7 @@
 										<span class="fas fa-circle"
 											th:class="${friend.online} ? 'chat-online' : 'chat-offline'"></span>
 										<span th:text="${friend.online} ? 'Online' : 'Offline'"></span>
+										<div class="badge bg-success float-right hidden">0</div>
 										<input type="hidden" name="senderPhoneNumber" th:value="${friend.phoneNumber}">
 									</div>
 
@@ -307,5 +308,4 @@
 
 	</script>
 </body>
-
 </html>
