@@ -19,7 +19,7 @@ public class ChatMessageServiceImpl {
 
     public ChatMessage save(ChatMessage chatMessage) {
         var chatId = chatRoomServiceImpl
-                .getChatRoomId(chatMessage.getSenderId(), chatMessage.getReceiverId(), true)
+                .getChatRoomId(chatMessage.getSenderId(), chatMessage.getReceiverId())
                 .orElseThrow(); // You can create your own dedicated exception
         chatMessage.setChatId(chatId);
         repository.save(chatMessage);
@@ -27,7 +27,7 @@ public class ChatMessageServiceImpl {
     }
 
     public List<ChatMessage> findChatMessages(String senderId, String receiverId) {
-        var chatId = chatRoomServiceImpl.getChatRoomId(senderId, receiverId, false);
+        var chatId = chatRoomServiceImpl.getChatRoomId(senderId, receiverId);
         return chatId.map(repository::findByChatId).orElse(new ArrayList<>());
     }
 }

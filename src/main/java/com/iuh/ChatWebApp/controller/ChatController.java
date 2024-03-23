@@ -41,7 +41,7 @@ public class ChatController {
 	    public String getChatRoom(@RequestParam("senderPhoneNumber") String friendPhoneNumber, Model model, HttpSession session) {
 		  User loggedInUser = (User) session.getAttribute("loggedInUser");
 		  
-	        Optional<String> chatRoomId = chatRoomServiceImpl.getChatRoomId(loggedInUser.getPhoneNumber(), friendPhoneNumber, true);
+	        Optional<String> chatRoomId = chatRoomServiceImpl.getChatRoomId(loggedInUser.getPhoneNumber(), friendPhoneNumber);
 	        if (chatRoomId.isPresent()) {
 	        	User chatFriendUser = userService.findUserByPhoneNumber(friendPhoneNumber);
 	        	
@@ -67,11 +67,12 @@ public class ChatController {
 	        );
 	    }
 
-	    @GetMapping("/messages/{senderId}/{recipientId}")
+	    @GetMapping("/messages/{senderId}/{receiverId}")
 	    public ResponseEntity<List<ChatMessage>> findChatMessages(@PathVariable String senderId,
-	                                                 @PathVariable String recipientId) {
+	                                                 @PathVariable String receiverId) {
+	    	
 	        return ResponseEntity
-	                .ok(chatMessageServiceImpl.findChatMessages(senderId, recipientId));
+	                .ok(chatMessageServiceImpl.findChatMessages(senderId, receiverId));
 	    }
 
 }

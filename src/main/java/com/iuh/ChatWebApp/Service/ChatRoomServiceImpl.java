@@ -14,13 +14,8 @@ public class ChatRoomServiceImpl {
 	@Autowired
 	private ChatRoomRepository chatRoomRepository;
 
-	public Optional<String> getChatRoomId(String senderId, String receiverId, boolean createNewRoomIfNotExists) {
+	public Optional<String> getChatRoomId(String senderId, String receiverId) {
 		return chatRoomRepository.findBySenderIdAndReceiverId(senderId, receiverId).map(ChatRoom::getChatId).or(() -> {
-			if (createNewRoomIfNotExists) {
-				var chatId = createChatId(senderId, receiverId);
-				return Optional.of(chatId);
-			}
-			
 			return Optional.empty();
 		});
 	}
