@@ -7,7 +7,6 @@
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/css/bootstrap.min.css" rel="stylesheet">
 	<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
-
 	<style type="text/css">
 		body {
 			background-color: #f4f7f6;
@@ -66,6 +65,10 @@
 			overflow-y: auto;
 		}
 
+		.chat-message::-webkit-scrollbar {
+			width: 0;
+		}
+
 		.chat-message.mine {
 			align-items: flex-end;
 		}
@@ -85,6 +88,30 @@
 		.chat-message.mine .content {
 			background-color: #007bff;
 			color: #fff;
+		}
+
+		.emoji {
+			margin-bottom: 165px;
+			margin-right: 500px;
+			height: 0px;
+			background-color: #fff;
+			width: 400px;
+			z-index: 999;
+			overflow-y: scroll;
+			cursor: pointer;
+			border-radius: 5px;
+			transition: 0.5s height;
+			 position: absolute;
+			 bottom: -100px;
+		}
+
+		.emoji::-webkit-scrollbar {
+			width: 0;
+		}
+
+		.emoji span {
+			margin-left: 9.8px;
+			font-size: 26px;
 		}
 	</style>
 </head>
@@ -141,7 +168,44 @@
 		<!-- Lịch sử tin nhắn sẽ được hiển thị ở đây -->
 	</div>
 
-	<div class="fixed-bottom-input">
+
+	<div class="fixed-bottom-input" style="flex-direction: column;">
+		<div class="emoji">
+			<span id="emoji1" onclick="emoji(this.id)">&#128512</span>
+			<span id="emoji2" onclick="emoji(this.id)">&#128513</span>
+			<span id="emoji3" onclick="emoji(this.id)">&#128514</span>
+			<span id="emoji4" onclick="emoji(this.id)">&#128515</span>
+			<span id="emoji5" onclick="emoji(this.id)">&#128516</span>
+			<span id="emoji6" onclick="emoji(this.id)">&#128517</span>
+			<span id="emoji7" onclick="emoji(this.id)">&#128518</span>
+			<span id="emoji8" onclick="emoji(this.id)">&#128519</span>
+			<span id="emoji9" onclick="emoji(this.id)">&#128520</span>
+			<span id="emoji10" onclick="emoji(this.id)">&#128521</span>
+			<span id="emoji11" onclick="emoji(this.id)">&#128522</span>
+			<span id="emoji12" onclick="emoji(this.id)">&#128523</span>
+			<span id="emoji13" onclick="emoji(this.id)">&#128524</span>
+			<span id="emoji14" onclick="emoji(this.id)">&#128525</span>
+			<span id="emoji15" onclick="emoji(this.id)">&#128526</span>
+			<span id="emoji16" onclick="emoji(this.id)">&#128527</span>
+			<span id="emoji17" onclick="emoji(this.id)">&#128528</span>
+			<span id="emoji18" onclick="emoji(this.id)">&#128529</span>
+			<span id="emoji19" onclick="emoji(this.id)">&#128530</span>
+			<span id="emoji20" onclick="emoji(this.id)">&#128531</span>
+			<span id="emoji21" onclick="emoji(this.id)">&#128532</span>
+			<span id="emoji22" onclick="emoji(this.id)">&#128533</span>
+			<span id="emoji23" onclick="emoji(this.id)">&#128534</span>
+			<span id="emoji24" onclick="emoji(this.id)">&#128535</span>
+			<span id="emoji25" onclick="emoji(this.id)">&#128536</span>
+			<span id="emoji26" onclick="emoji(this.id)">&#128537</span>
+			<span id="emoji27" onclick="emoji(this.id)">&#128538</span>
+			<span id="emoji28" onclick="emoji(this.id)">&#128539</span>
+			<span id="emoji29" onclick="emoji(this.id)">&#128540</span>
+			<span id="emoji30" onclick="emoji(this.id)">&#128541</span>
+			<span id="emoji31" onclick="emoji(this.id)">&#128542</span>
+			<span id="emoji32" onclick="emoji(this.id)">&#128543</span>
+			
+			
+		</div>
 		<div class="input-group">
 			<div class="input-group-prepend">
 				<div class="input-group-prepend">
@@ -151,13 +215,15 @@
 					<button class="btn btn-light" type="button">
 						<i class="material-icons">mic</i>
 					</button>
+
 					<button class="btn btn-light" type="button">
-						<i class="material-icons">sentiment_satisfied_alt</i>
+						<i class="material-icons" onclick="show_emoji()">sentiment_satisfied_alt</i>
 					</button>
+
 
 				</div>
 			</div>
-			<input type="text" id="emoji-input" class="form-control mx-2" placeholder="Type your message">
+			<input type="text" id="input-field" class="form-control mx-2" placeholder="Type your message">
 			<div class="input-group-append">
 				<button class="btn btn-primary" type="button">Send</button>
 			</div>
@@ -168,11 +234,11 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
-	<script src="https://cdn.jsdelivr.net/npm/emoji-picker-js/dist/js/emoji-picker.min.js"></script>
+
+
 
 	<!-- Trong JavaScript -->
 	<script type="text/javascript">
-
 
 		$(window).on('resize', function () {
 			var chatHistoryHeight = $(window).height() - $('.chat-header').outerHeight() - $('.fixed-bottom-input').outerHeight();
@@ -233,12 +299,11 @@
 			appendNewMessageToUI(message);
 		}
 
-
+		/////
 		$(document).ready(function () {
 			// Gọi hàm connect() khi trang đã tải hoàn toàn
 			connect();
 
-			
 			// Gọi hàm truy xuất lịch sử tin nhắn khi trang được tải hoàn toàn
 			$(document).ready(function () {
 				var senderId = $("input[name='loggedInUserPhoneNumber']").val();
@@ -246,6 +311,7 @@
 				fetchMessageHistory(senderId, receiverId);
 
 			});
+
 
 			// Bắt sự kiện khi nút "Send" được nhấn
 			$(".btn-primary").click(function () {
@@ -261,6 +327,7 @@
 			$(".fixed-bottom-input .btn-primary").click(function () {
 				// Lấy nội dung tin nhắn từ ô input
 				var messageContent = $(".fixed-bottom-input input").val().trim();
+
 
 				var loggedInUserPhoneNumber = $("input[name='loggedInUserPhoneNumber']").val();
 				var chatFriendUserPhoneNumber = $("input[name='chatFriendUser']").val();
@@ -287,6 +354,7 @@
 					// Xóa nội dung tin nhắn khỏi ô input sau khi gửi
 					$(".fixed-bottom-input input").val("");
 				}
+				
 			});
 
 
@@ -319,9 +387,22 @@
 
 		}
 
-	
-
-
+		////emoji
+		click = false
+		function show_emoji() {
+			if (click == false) {
+				document.getElementsByClassName("emoji")[0].style.height = "142px";
+				document.getElementsByClassName("emoji")[0].style.height = "8px 0px";
+				click = true;
+			} else {
+				document.getElementsByClassName("emoji")[0].style.height = "0px";
+				document.getElementsByClassName("emoji")[0].style.height = "0px";
+				click = false;
+			}
+		}
+		function emoji(emoji) {
+			document.getElementById("input-field").value += document.getElementById(emoji).innerHTML;
+		}
 	</script>
 
 </body>
