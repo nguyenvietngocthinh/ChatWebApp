@@ -19,6 +19,7 @@
 			flex-grow: 1;
 			overflow-y: auto;
 			border-left: 1px solid #eaeaea;
+			
 
 		}
 
@@ -161,6 +162,13 @@
 			font-weight: bold;
 			cursor: pointer;
 		}
+
+		.message-image {
+			max-width: 100px;
+			/* Điều chỉnh kích thước chiều rộng tối đa của hình ảnh */
+			max-height: 100px;
+			/* Điều chỉnh kích thước chiều cao tối đa của hình ảnh */
+		}
 	</style>
 </head>
 
@@ -264,13 +272,13 @@
 		<div class="input-group">
 			<div class="input-group-prepend">
 				<div class="input-group-prepend">
-					<input type="file" id="file-input" style="display: none;"/>
+					<input type="file" id="file-input" style="display: none;" />
 					<button class="btn btn-light" type="button"
 						onclick="document.getElementById('file-input').click();">
 						<i class="material-icons">insert_drive_file</i>
 					</button>
 
-					<input type="file" name="fileImage" id="fileImage" 
+					<input type="file" name="fileImage" id="fileImage" style="display: none;"
 						accept="image/png, image/jpg, image/jpeg" />
 					<button class="btn btn-light" type="button" onclick="document.getElementById('fileImage').click();">
 						<i class="material-icons">insert_photo</i>
@@ -363,6 +371,7 @@
 				var formData = new FormData();
 				var imageFile = $("#fileImage")[0].files[0];
 				if (imageFile) {
+					//luu hinh anh vao database
 					formData.append("fileImage", imageFile);
 					// Gửi hình ảnh lên server thông qua AJAX
 					$.ajax({
@@ -372,6 +381,25 @@
 						contentType: false,
 						processData: false,
 						success: function (response) {
+							//Gui tin nhan hinh anh
+							messageContent = "Image: " + imageFile.name;
+							var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
+							$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
+
+							// Tạo đối tượng tin nhắn để gửi lên server
+							var chatMessage = {
+								senderId: loggedInUserPhoneNumber,
+								receiverId: chatFriendUserPhoneNumber,
+								content: messageContent,
+								timestamp: timestamp // Thêm timestamp vào tin nhắn
+							};
+
+							// Gửi tin nhắn lên server thông qua WebSocket
+							stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
+							console.log("Tin nhắn đã được gửi:", chatMessage);
+
+							// Hiển thị tin nhắn ngay sau khi gửi
+							showMessage(chatMessage);
 							$("#fileImage").val('');
 							// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
 							$('#thumbnail').attr('src', '');
@@ -383,6 +411,8 @@
 						}
 					});
 				}
+
+
 			});
 
 
@@ -472,21 +502,29 @@
 			});
 		}
 
-		// Bổ sung tin nhắn mới vào đầu danh sách trong giao diện sau khi gửi tin nhắn
 		function appendNewMessageToUI(message) {
 			var chatContainer = $("#message-container");
 			var messageClass = message.senderId === $("input[name='loggedInUserPhoneNumber']").val() ? "mine" : "other";
 
-			var messageDiv = '<div class="chat-message ' + messageClass + '">' +
-				'<div class="content">' + message.content + '</div>' +
-				'</div>';
+			// Kiểm tra nếu tin nhắn chứa hình ảnh
+			if (message.content.startsWith("Image: ")) {
+				var imageSrc = message.content.substring(7); // Lấy đường dẫn của hình ảnh từ tin nhắn
+				var messageDiv = '<div class="chat-message ' + messageClass + '">' +
+					'<div class="content">' +
+					'<img src="./images-send/' + imageSrc + '"class="message-image">' +
+					'</div>' +
+					'</div>';
+			} else {
+				// Tin nhắn không chứa hình ảnh
+				var messageDiv = '<div class="chat-message ' + messageClass + '">' +
+					'<div class="content">' + message.content + '</div>' +
+					'</div>';
+			}
+
 			chatContainer.append(messageDiv);
-
-
 			chatContainer.scrollTop(chatContainer[0].scrollHeight);
-
-
 		}
+
 
 		////emoji
 		click = false

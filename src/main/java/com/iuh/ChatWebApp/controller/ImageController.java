@@ -1,5 +1,6 @@
 package com.iuh.ChatWebApp.controller;
 
+import java.io.Console;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -35,7 +36,7 @@ public class ImageController {
 
 			Image savedImage = imageServiceImpl.save(image);
 
-			String uploadDir = "/images-send" + savedImage.getId();
+			String uploadDir = "./images-send/";
 
 			Path uploadPath = Paths.get(uploadDir);
 
@@ -46,6 +47,7 @@ public class ImageController {
 			try (InputStream inputStream = multipartFile.getInputStream()) {
 				Path filePath = uploadPath.resolve(fileName);
 				Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+				System.out.println(filePath.toFile().getAbsolutePath());
 			} catch (IOException e) {
 				throw new IOException("Could not save uploaded file: " + fileName);
 			}
