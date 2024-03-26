@@ -101,8 +101,8 @@
 			cursor: pointer;
 			border-radius: 5px;
 			transition: 0.5s height;
-			 position: absolute;
-			 bottom: -100px;
+			position: absolute;
+			bottom: -100px;
 		}
 
 		.emoji::-webkit-scrollbar {
@@ -112,6 +112,54 @@
 		.emoji span {
 			margin-left: 9.8px;
 			font-size: 26px;
+		}
+
+		.imageChoose {
+			position: relative;
+			margin-top: 10px;
+			margin-left: 3.5px;
+			background-color: #fff;
+			width: 950px;
+			z-index: 999;
+			overflow-y: scroll;
+			cursor: pointer;
+			border-radius: 5px;
+			transition: 0.5s height;
+			height: 0;
+			/* Bắt đầu với chiều cao là 0 */
+		}
+
+		.imageChoose::-webkit-scrollbar {
+			width: 0;
+		}
+
+		.rounded-square {
+			border-radius: 5px;
+			/* Điều chỉnh giá trị để tạo hình vuông */
+			width: 100px;
+			/* Điều chỉnh kích thước chiều rộng */
+			height: 100px;
+			/* Điều chỉnh kích thước chiều cao */
+			object-fit: cover;
+			/* Đảm bảo hình ảnh sẽ không bị căn chỉnh */
+			margin-bottom: 20px;
+			border: 2px solid #000;
+		}
+
+		.image-container {
+			position: relative;
+			display: inline-block;
+		}
+
+		.delete-btn {
+			position: absolute;
+			top: 0;
+			right: 0;
+			background-color: transparent;
+			border: none;
+			color: red;
+			font-weight: bold;
+			cursor: pointer;
 		}
 	</style>
 </head>
@@ -203,17 +251,30 @@
 			<span id="emoji30" onclick="emoji(this.id)">&#128541</span>
 			<span id="emoji31" onclick="emoji(this.id)">&#128542</span>
 			<span id="emoji32" onclick="emoji(this.id)">&#128543</span>
-			
-			
 		</div>
+
+		<div class="imageChoose">
+			<div class="image-container">
+				<img id="thumbnail" class="rounded-square" alt="Logo Preview">
+				<button class="delete-btn" onclick="deleteImage()">X</button>
+			</div>
+		</div>
+
+
 		<div class="input-group">
 			<div class="input-group-prepend">
 				<div class="input-group-prepend">
-					<button class="btn btn-light" type="button">
+					<input type="file" id="file-input" style="display: none;" />
+					<button class="btn btn-light" type="button"
+						onclick="document.getElementById('file-input').click();">
 						<i class="material-icons">insert_drive_file</i>
 					</button>
-					<button class="btn btn-light" type="button">
-						<i class="material-icons">mic</i>
+
+					<input type="file" id="picture-input" style="display: none;"
+						accept="image/png, image/jpg, image/jpeg" />
+					<button class="btn btn-light" type="button"
+						onclick="document.getElementById('picture-input').click();">
+						<i class="material-icons">insert_photo</i>
 					</button>
 
 					<button class="btn btn-light" type="button">
@@ -239,7 +300,6 @@
 
 	<!-- Trong JavaScript -->
 	<script type="text/javascript">
-
 		$(window).on('resize', function () {
 			var chatHistoryHeight = $(window).height() - $('.chat-header').outerHeight() - $('.fixed-bottom-input').outerHeight();
 			$('.chat-history').css('height', chatHistoryHeight + 'px');
@@ -326,7 +386,7 @@
 			// Lắng nghe sự kiện khi nút "Send" được nhấn
 			$(".fixed-bottom-input .btn-primary").click(function () {
 				// Lấy nội dung tin nhắn từ ô input
-				var messageContent = $(".fixed-bottom-input input").val().trim();
+				var messageContent = $("#input-field").val().trim();
 
 
 				var loggedInUserPhoneNumber = $("input[name='loggedInUserPhoneNumber']").val();
@@ -354,11 +414,31 @@
 					// Xóa nội dung tin nhắn khỏi ô input sau khi gửi
 					$(".fixed-bottom-input input").val("");
 				}
-				
+
 			});
 
 
+			////Image
+			$("#picture-input").change(function () {
+				// Hiển thị khu vực imageChoose
+				$(".imageChoose").css("height", "auto");
+
+				// Hiển thị hình ảnh được chọn
+				showImageThumbnail(this);
+
+			});
+
 		});
+		function showImageThumbnail(fileInput) {
+			file = fileInput.files[0];
+			reader = new FileReader();
+
+			reader.onload = function (e) {
+				$('#thumbnail').attr('src', e.target.result);
+			};
+
+			reader.readAsDataURL(file);
+		}
 
 
 		// Hàm để truy xuất lịch sử tin nhắn từ máy chủ
@@ -402,6 +482,13 @@
 		}
 		function emoji(emoji) {
 			document.getElementById("input-field").value += document.getElementById(emoji).innerHTML;
+		}
+		
+		function deleteImage() {
+			// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
+			$('#thumbnail').attr('src', '');
+			// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
+			$(".imageChoose").css("height", "0");
 		}
 	</script>
 
