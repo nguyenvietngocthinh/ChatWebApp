@@ -264,16 +264,15 @@
 		<div class="input-group">
 			<div class="input-group-prepend">
 				<div class="input-group-prepend">
-					<input type="file" id="file-input" style="display: none;" />
+					<input type="file" id="file-input" style="display: none;"/>
 					<button class="btn btn-light" type="button"
 						onclick="document.getElementById('file-input').click();">
 						<i class="material-icons">insert_drive_file</i>
 					</button>
 
-					<input type="file" id="picture-input" style="display: none;"
+					<input type="file" name="fileImage" id="fileImage" 
 						accept="image/png, image/jpg, image/jpeg" />
-					<button class="btn btn-light" type="button"
-						onclick="document.getElementById('picture-input').click();">
+					<button class="btn btn-light" type="button" onclick="document.getElementById('fileImage').click();">
 						<i class="material-icons">insert_photo</i>
 					</button>
 
@@ -304,61 +303,6 @@
 			var chatHistoryHeight = $(window).height() - $('.chat-header').outerHeight() - $('.fixed-bottom-input').outerHeight();
 			$('.chat-history').css('height', chatHistoryHeight + 'px');
 		});
-
-		function connect() {
-			var socket = new SockJS('/ws');
-			stompClient = Stomp.over(socket);
-
-			// Sự kiện khi kết nối WebSocket được mở thành công
-			stompClient.connect({}, function (frame) {
-				console.log('Connected:');
-				console.log(frame); // Hiển thị thông tin frame
-				console.log('WebSocket connection opened successfully.');
-
-
-
-				var receiverId = $("input[name='loggedInUserPhoneNumber']").val();
-
-				stompClient.subscribe('/user/' + receiverId + '/queue/messages', function (message) {
-					// Hiển thị tin nhắn mới trong message-container
-					showMessage(JSON.parse(message.body));
-				});
-
-			}, function (error) {
-				// Sự kiện khi có lỗi xảy ra khi kết nối WebSocket
-				console.error('WebSocket error: ' + error);
-			});
-		}
-
-
-		// Hàm được gọi khi kết nối WebSocket được mở thành công
-		function onConnected() {
-			console.log('WebSocket connection opened successfully.');
-
-			// Thực hiện các hành động cần thiết khi kết nối được mở
-		}
-
-		// Hàm được gọi khi kết nối WebSocket bị đóng
-		function onDisconnected() {
-			console.log('WebSocket connection closed.');
-
-			// Thực hiện các hành động cần thiết khi kết nối bị đóng
-		}
-
-
-		var displayedMessages = [];
-		function showMessage(message) {
-			// Kiểm tra xem tin nhắn có tồn tại trong mảng displayedMessages hay không
-			if (displayedMessages.includes(message.timestamp)) {
-				// Nếu đã tồn tại, bỏ qua việc hiển thị tin nhắn
-				return;
-			}
-
-			// Nếu chưa tồn tại, thêm timestamp vào mảng displayedMessages và hiển thị tin nhắn
-			displayedMessages.push(message.timestamp);
-			appendNewMessageToUI(message);
-		}
-
 		/////
 		$(document).ready(function () {
 			// Gọi hàm connect() khi trang đã tải hoàn toàn
@@ -415,20 +359,97 @@
 					$(".fixed-bottom-input input").val("");
 				}
 
+				// Gửi hình ảnh nếu có
+				var formData = new FormData();
+				var imageFile = $("#fileImage")[0].files[0];
+				if (imageFile) {
+					formData.append("fileImage", imageFile);
+					// Gửi hình ảnh lên server thông qua AJAX
+					$.ajax({
+						url: "/imagesSend/save", // Địa chỉ URL của endpoint để lưu hình ảnh
+						type: "POST",
+						data: formData,
+						contentType: false,
+						processData: false,
+						success: function (response) {
+							$("#fileImage").val('');
+							// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
+							$('#thumbnail').attr('src', '');
+							// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
+							$(".imageChoose").css("height", "0");
+						},
+						error: function (error) {
+							console.error("Error sending image:", error);
+						}
+					});
+				}
 			});
 
 
 			////Image
-			$("#picture-input").change(function () {
+			$("#fileImage").change(function () {
+
 				// Hiển thị khu vực imageChoose
 				$(".imageChoose").css("height", "auto");
 
 				// Hiển thị hình ảnh được chọn
 				showImageThumbnail(this);
-
 			});
-
 		});
+		function connect() {
+			var socket = new SockJS('/ws');
+			stompClient = Stomp.over(socket);
+
+			// Sự kiện khi kết nối WebSocket được mở thành công
+			stompClient.connect({}, function (frame) {
+				console.log('Connected:');
+				console.log(frame); // Hiển thị thông tin frame
+				console.log('WebSocket connection opened successfully.');
+
+
+
+				var receiverId = $("input[name='loggedInUserPhoneNumber']").val();
+
+				stompClient.subscribe('/user/' + receiverId + '/queue/messages', function (message) {
+					// Hiển thị tin nhắn mới trong message-container
+					showMessage(JSON.parse(message.body));
+				});
+
+			}, function (error) {
+				// Sự kiện khi có lỗi xảy ra khi kết nối WebSocket
+				console.error('WebSocket error: ' + error);
+			});
+		}
+
+
+		// Hàm được gọi khi kết nối WebSocket được mở thành công
+		function onConnected() {
+			console.log('WebSocket connection opened successfully.');
+
+			// Thực hiện các hành động cần thiết khi kết nối được mở
+		}
+
+		// Hàm được gọi khi kết nối WebSocket bị đóng
+		function onDisconnected() {
+			console.log('WebSocket connection closed.');
+
+			// Thực hiện các hành động cần thiết khi kết nối bị đóng
+		}
+
+
+		var displayedMessages = [];
+		function showMessage(message) {
+			// Kiểm tra xem tin nhắn có tồn tại trong mảng displayedMessages hay không
+			if (displayedMessages.includes(message.timestamp)) {
+				// Nếu đã tồn tại, bỏ qua việc hiển thị tin nhắn
+				return;
+			}
+
+			// Nếu chưa tồn tại, thêm timestamp vào mảng displayedMessages và hiển thị tin nhắn
+			displayedMessages.push(message.timestamp);
+			appendNewMessageToUI(message);
+		}
+
 		function showImageThumbnail(fileInput) {
 			file = fileInput.files[0];
 			reader = new FileReader();
@@ -483,8 +504,9 @@
 		function emoji(emoji) {
 			document.getElementById("input-field").value += document.getElementById(emoji).innerHTML;
 		}
-		
+
 		function deleteImage() {
+			$("#fileImage").val('');
 			// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
 			$('#thumbnail').attr('src', '');
 			// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
