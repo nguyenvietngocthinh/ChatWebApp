@@ -19,8 +19,6 @@
 			flex-grow: 1;
 			overflow-y: auto;
 			border-left: 1px solid #eaeaea;
-			
-
 		}
 
 		.chat-app .chat .chat-header,
@@ -134,6 +132,25 @@
 			width: 0;
 		}
 
+		.fileChoose {
+			position: relative;
+			margin-top: 10px;
+			margin-left: 3.5px;
+			background-color: #fff;
+			width: 950px;
+			z-index: 999;
+			overflow-y: scroll;
+			cursor: pointer;
+			border-radius: 5px;
+			transition: 0.5s height;
+			height: 0;
+			/* Bắt đầu với chiều cao là 0 */
+		}
+
+		.fileChoose::-webkit-scrollbar {
+			width: 0;
+		}
+
 		.rounded-square {
 			border-radius: 5px;
 			/* Điều chỉnh giá trị để tạo hình vuông */
@@ -152,6 +169,11 @@
 			display: inline-block;
 		}
 
+		.file-container {
+			position: relative;
+			display: inline-block;
+		}
+
 		.delete-btn {
 			position: absolute;
 			top: 0;
@@ -164,9 +186,9 @@
 		}
 
 		.message-image {
-			max-width: 100px;
+			max-width: 400px;
 			/* Điều chỉnh kích thước chiều rộng tối đa của hình ảnh */
-			max-height: 100px;
+			max-height: 400px;
 			/* Điều chỉnh kích thước chiều cao tối đa của hình ảnh */
 		}
 	</style>
@@ -268,13 +290,23 @@
 			</div>
 		</div>
 
+		<div class="fileChoose" style="flex-direction: column;">
+			<div class="file-container">
+				<img id="thumbnailFile" class="rounded-square" alt="File Preview" th:src="@{images/document.jpg}">
+				<button class="delete-btn" onclick="deleteFile()">X</button>
+			</div>
+			
+			<div style="margin-top: -20px;">
+				<span id="fileChosenName"></span>
+			</div>
+			
+		</div>
 
 		<div class="input-group">
 			<div class="input-group-prepend">
 				<div class="input-group-prepend">
-					<input type="file" id="file-input" style="display: none;" />
-					<button class="btn btn-light" type="button"
-						onclick="document.getElementById('file-input').click();">
+					<input type="file" id="fileInput" style="display: none;" />
+					<button class="btn btn-light" type="button" onclick="document.getElementById('fileInput').click();">
 						<i class="material-icons">insert_drive_file</i>
 					</button>
 
@@ -307,6 +339,8 @@
 
 	<!-- Trong JavaScript -->
 	<script type="text/javascript">
+
+		///Canh chinh de luot len xuong
 		$(window).on('resize', function () {
 			var chatHistoryHeight = $(window).height() - $('.chat-header').outerHeight() - $('.fixed-bottom-input').outerHeight();
 			$('.chat-history').css('height', chatHistoryHeight + 'px');
@@ -339,7 +373,6 @@
 			$(".fixed-bottom-input .btn-primary").click(function () {
 				// Lấy nội dung tin nhắn từ ô input
 				var messageContent = $("#input-field").val().trim();
-
 
 				var loggedInUserPhoneNumber = $("input[name='loggedInUserPhoneNumber']").val();
 				var chatFriendUserPhoneNumber = $("input[name='chatFriendUser']").val();
@@ -425,7 +458,24 @@
 				// Hiển thị hình ảnh được chọn
 				showImageThumbnail(this);
 			});
+			////Image
+			$("#fileInput").change(function () {
+
+				// Hiển thị khu vực imageChoose
+				$(".fileChoose").css("height", "auto");
+
+				// Lấy tên của file từ đối tượng input
+				var fileName = $(this).val().split('\\').pop(); // Lấy phần cuối cùng của đường dẫn là tên file
+
+				// Hiển thị tên file
+				$("#fileChosenName").text(fileName);
+
+			});
+
+
 		});
+
+		//Ham connect socket
 		function connect() {
 			var socket = new SockJS('/ws');
 			stompClient = Stomp.over(socket);
@@ -467,6 +517,7 @@
 		}
 
 
+		// Hien thi showMessages
 		var displayedMessages = [];
 		function showMessage(message) {
 			// Kiểm tra xem tin nhắn có tồn tại trong mảng displayedMessages hay không
@@ -480,6 +531,7 @@
 			appendNewMessageToUI(message);
 		}
 
+		// hien thi hinh anh duoc chon
 		function showImageThumbnail(fileInput) {
 			file = fileInput.files[0];
 			reader = new FileReader();
@@ -489,6 +541,23 @@
 			};
 
 			reader.readAsDataURL(file);
+		}
+
+		// xoa hinh anh di o thumbail
+		function deleteImage() {
+			$("#fileImage").val('');
+			// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
+			$('#thumbnail').attr('src', '');
+			// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
+			$(".imageChoose").css("height", "0");
+		}
+
+		// xoa hinh anh di o thumbail
+		function deleteFile() {
+			$("#fileInput").val('');
+
+			// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
+			$(".fileChoose").css("height", "0");
 		}
 
 
@@ -502,6 +571,7 @@
 			});
 		}
 
+		// Cach hien thi tin nhan moi
 		function appendNewMessageToUI(message) {
 			var chatContainer = $("#message-container");
 			var messageClass = message.senderId === $("input[name='loggedInUserPhoneNumber']").val() ? "mine" : "other";
@@ -543,13 +613,7 @@
 			document.getElementById("input-field").value += document.getElementById(emoji).innerHTML;
 		}
 
-		function deleteImage() {
-			$("#fileImage").val('');
-			// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
-			$('#thumbnail').attr('src', '');
-			// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
-			$(".imageChoose").css("height", "0");
-		}
+
 	</script>
 
 </body>
