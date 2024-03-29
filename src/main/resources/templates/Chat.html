@@ -295,17 +295,17 @@
 				<img id="thumbnailFile" class="rounded-square" alt="File Preview" th:src="@{images/document.jpg}">
 				<button class="delete-btn" onclick="deleteFile()">X</button>
 			</div>
-			
+
 			<div style="margin-top: -20px;">
 				<span id="fileChosenName"></span>
 			</div>
-			
+
 		</div>
 
 		<div class="input-group">
 			<div class="input-group-prepend">
 				<div class="input-group-prepend">
-					<input type="file" id="fileInput" style="display: none;" />
+					<input type="file" id="fileInput" name="fileInput" style="display: none;" />
 					<button class="btn btn-light" type="button" onclick="document.getElementById('fileInput').click();">
 						<i class="material-icons">insert_drive_file</i>
 					</button>
@@ -441,6 +441,53 @@
 						},
 						error: function (error) {
 							console.error("Error sending image:", error);
+						}
+					});
+				}
+
+				// Gửi file nếu có
+				var formDataFile = new FormData();
+				var fileInput = $("#fileInput")[0].files[0];
+				if (fileInput) {
+					formDataFile.append("document", fileInput);
+					// Gửi file lên server thông qua AJAX
+					$.ajax({
+						url: "/fileSend/save", // Địa chỉ URL của endpoint để lưu file
+						type: "POST",
+						data: formDataFile,
+						contentType: false,
+						processData: false,
+						success: function (response) {
+							var fileId = response.fileId;
+							messageContent = "File: " + fileId + "/" + fileInput.name;
+							var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
+							$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
+
+							// Tạo đối tượng tin nhắn để gửi lên server
+							var chatMessage = {
+								senderId: loggedInUserPhoneNumber,
+								receiverId: chatFriendUserPhoneNumber,
+								content: messageContent,
+								timestamp: timestamp // Thêm timestamp vào tin nhắn
+							};
+
+							// Gửi tin nhắn lên server thông qua WebSocket
+							stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
+							console.log("Tin nhắn đã được gửi:", chatMessage);
+							var fileId = response.fileId; // Lấy fileId từ response
+							console.log("File đã được lưu với ID:", fileId);
+
+							// Hiển thị tin nhắn ngay sau khi gửi
+							showMessage(chatMessage);
+							// Thực hiện các hành động cần thiết sau khi gửi file thành công
+							$("#fileInput").val('');
+
+							// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
+							$(".fileChoose").css("height", "0");
+						},
+						error: function (error) {
+							console.error("Lỗi khi gửi và lưu file:", error);
+							// Thực hiện các hành động cần thiết khi gửi file gặp lỗi
 						}
 					});
 				}
@@ -583,6 +630,26 @@
 					'<div class="content">' +
 					'<img src="./images-send/' + imageSrc + '"class="message-image">' +
 					'</div>' +
+					'</div>';
+			} else if (message.content.startsWith("File: ")) {
+				// Nếu tin nhắn bắt đầu từ "File:", tạo một thẻ <a> chứa nội dung của tin nhắn
+				var fileMessage = message.content.substring(6); // Lấy tên file từ tin nhắn
+
+				var fileId = fileMessage.split("/")[0]; // Lấy phần fileId
+				var fileName = fileMessage.split("/")[1]; // Lấy phần fileName
+
+				// Tạo URL tải xuống với fileId
+				var downloadUrl = "/download?id=" + fileId;
+
+
+
+				// Xác định màu sắc của tin nhắn dựa trên loại là của bạn (mine) hay của người khác (other)
+				var messageColorClass = messageClass === "mine" ? "text-white" : "text-dark";
+
+				var fileLink = '<a href="'+ downloadUrl +'" class="' + messageColorClass + '">' + fileName + '</a>';
+
+				var messageDiv = '<div class="chat-message ' + messageClass + '">' +
+					'<div class="content">' + fileLink + '</div>' +
 					'</div>';
 			} else {
 				// Tin nhắn không chứa hình ảnh
