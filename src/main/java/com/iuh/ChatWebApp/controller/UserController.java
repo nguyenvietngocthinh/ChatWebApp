@@ -217,7 +217,6 @@ public class UserController {
 
 
 	
-	// UserController.java
 
 	@GetMapping("/search")
 	public String searchUsers(@RequestParam("searchText") String searchText, Model model, HttpSession session) {

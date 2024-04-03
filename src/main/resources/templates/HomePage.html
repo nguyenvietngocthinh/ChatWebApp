@@ -78,6 +78,30 @@
 		.hidden {
 			display: none;
 		}
+
+		.buttonChange {
+			border: 2px solid #f4f7f6;
+			/* Định dạng viền cho buttonChange */
+			padding: 5px;
+			/* Đặt khoảng cách giữa nút và viền */
+			border-radius: 5px;
+			/* Định dạng viền cong */
+		}
+
+		.icon-btn {
+			background-color: transparent;
+			border: none;
+			;
+			margin-left: 30px;
+			/* Khoảng cách giữa hai nút */
+			color: #007bff;
+			/* Màu biểu tượng */
+		}
+
+		.icon-btn:hover {
+			border-color: #007bff;
+			/* Màu viền khi hover */
+		}
 	</style>
 	</style>
 </head>
@@ -91,7 +115,7 @@
 							alt="Avatar" width="40" height="40"></a>
 					<div class="flex-grow-1"></div>
 					<div class="d-flex">
-						<button class="btn btn-link">
+						<button class="btn btn-link" id="addGroupBtn" data-toggle="modal" data-target="#addGroupModal">
 							<i class="material-icons">group_add</i>
 						</button>
 						<button class="btn btn-link" id="settingsBtn">
@@ -106,11 +130,55 @@
 				</div>
 			</div>
 
+			<!-- Modal -->
+			<div class="modal fade" id="addGroupModal" tabindex="-1" role="dialog" aria-labelledby="addGroupModalLabel"
+				aria-hidden="true">
+				<div class="modal-dialog" role="document">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="addGroupModalLabel">Tạo nhóm mới</h5>
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+						<div class="modal-body">
+							<!-- Form để nhập tên nhóm và tìm kiếm bạn bè -->
+							<form id="addGroupForm">
+								<div class="form-group">
+									<label for="groupName">Tên nhóm:</label>
+									<input type="text" class="form-control" id="groupName" placeholder="Nhập tên nhóm">
+								</div>
+								<div class="form-group">
+									<label for="searchFriends">Tìm kiếm bạn bè:</label>
+									<input type="text" class="form-control" id="searchFriends"
+										placeholder="Tìm kiếm...">
+								</div>
+							</form>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+							<button type="button" class="btn btn-primary" id="createGroupBtn">Tạo nhóm</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
 			<div class="px-4 d-none d-md-block">
 				<div class="d-flex align-items-center">
 					<div class="flex-grow-1">
-						<input type="text" class="form-control my-3" id="searchInput" placeholder="Search...">
+						<input type="text" class="form-control my-3" id="searchInput" placeholder="Tìm kiếm">
 					</div>
+				</div>
+
+				<div class="buttonChange">
+					<button class="btn btn-link icon-btn" id="showFriendListBtn">
+						<i class="material-icons">people</i> <!-- Biểu tượng danh sách bạn bè -->
+					</button>
+					<!-- Thay thế nút "Nhóm chat" bằng biểu tượng -->
+					<button class="btn btn-link icon-btn" id="showGroupChatBtn">
+						<i class="material-icons">chat</i> <!-- Biểu tượng nhóm chat -->
+					</button>
 				</div>
 
 				<div class="list-group" id="searchResults"></div>
@@ -152,17 +220,15 @@
 					</div>
 				</div>
 
-
-
+				<div class="list-group hidden" id="groupChatList">
+					<!-- Hiển thị danh sách nhóm chat ở đây -->
+					<!-- Sử dụng Thymeleaf để lặp qua danh sách nhóm chat và hiển thị từng nhóm -->
+				</div>
 			</div>
-
-
-
 			<hr class="d-block d-lg-none mt-1 mb-0">
 		</div>
 
 		<div class="chatt hidden">
-
 		</div>
 
 
@@ -201,8 +267,6 @@
 				});
 			});
 		});
-
-
 
 
 		// Truyền dữ liệu tìm kiếm từ frontend lên backend thông qua Ajax.
@@ -248,35 +312,6 @@
 		});
 
 
-
-
-
-		$(document).ready(function () {
-			// Gọi hàm connect() khi trang đã tải hoàn toàn
-			connect();
-
-			// Bắt sự kiện khi nút "Send" được nhấn
-			$(".btn-primary").click(function () {
-				// Kiểm tra xem stompClient đã được định nghĩa chưa
-				if (typeof stompClient !== "undefined") {
-					// Thực hiện các hành động cần thiết với stompClient ở đây
-				} else {
-					console.error("stompClient is not defined. Please make sure to call connect() first.");
-				}
-			});
-		});
-
-		function connect() {
-			var socket = new SockJS('/ws');
-			stompClient = Stomp.over(socket);
-			stompClient.connect({}, function (frame) {
-				console.log('Connected: ' + frame);
-				stompClient.subscribe('/topic/messages', function (message) {
-					showMessage(JSON.parse(message.body));
-				});
-			});
-		}
-
 		$(document).ready(function () {
 			// Sử dụng sự kiện delegate để xử lý click cho ảnh trong friendList
 			$(document).on('click', '#friendList img', function (e) {
@@ -308,6 +343,28 @@
 			});
 		});
 
+		// Xử lý sự kiện khi nút "Danh sách bạn bè" được nhấn
+		$("#showFriendListBtn").click(function () {
+			$("#friendList").removeClass("hidden");
+			$("#groupChatList").addClass("hidden");
+		});
+
+		// Xử lý sự kiện khi nút "Nhóm chat" được nhấn
+		$("#showGroupChatBtn").click(function () {
+			$("#groupChatList").removeClass("hidden");
+			$("#friendList").addClass("hidden");
+		});
+
+		$(document).ready(function () {
+			// Xử lý sự kiện khi nhấn nút "group_add"
+			$("#addGroupBtn").click(function () {
+				// Hiển thị modal
+				$("#addGroupModal").modal("show");
+			});
+			// Đóng modal sau khi tạo nhóm
+			$("#addGroupModal").modal("hide");
+		});
 	</script>
 </body>
+
 </html>

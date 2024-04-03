@@ -49,7 +49,7 @@ public class UserServiceImpl {
 	
 	public List<User> searchUsers(String searchText, String loggedInUserPhoneNumber) {
 	    List<User> foundUsers = new ArrayList<>();
-	    // Tìm kiếm người dùng theo số điện thoại hoặc tên đầy đủ
+	    // Tìm kiếm người dùng theo số điện thoại 
 	    foundUsers.addAll(userRepository.findByPhoneNumberContainingIgnoreCase(searchText));
 	    // Loại bỏ người dùng hiện tại khỏi kết quả tìm kiếm
 	    foundUsers.removeIf(user -> user.getPhoneNumber().equals(loggedInUserPhoneNumber));

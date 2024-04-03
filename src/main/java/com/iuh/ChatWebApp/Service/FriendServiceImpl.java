@@ -67,6 +67,20 @@ public class FriendServiceImpl {
 		}
 		return friendList;
 	}
+	
+	public List<User> searchFriendListByPhoneNumber(String phoneNumber) {
+		List<Friend> friends = friendRepository.findBySenderOrReceiver(phoneNumber, phoneNumber);
+		List<User> friendList = new ArrayList<>();
+		for (Friend friend : friends) {
+			String friendPhoneNumber = friend.getSender().equals(phoneNumber) ? friend.getReceiver()
+					: friend.getSender();
+			User friendUser = userRepository.findByPhoneNumber(friendPhoneNumber);
+				friendList.add(friendUser);
+
+		}
+		return friendList;
+	}
+	
 
 	public void acceptFriendRequest(String senderPhoneNumber, String receiverPhoneNumber) {
 		// Tìm mối quan hệ bạn bè với senderPhoneNumber và receiverPhoneNumber
