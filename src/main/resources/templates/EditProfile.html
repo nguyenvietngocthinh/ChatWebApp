@@ -105,8 +105,8 @@
 								<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
 									<div class="form-group">
 										<label for="exampleInputPhoneNumber1">Số điện thoại</label>
-										<input type="text" class="form-control" id="exampleInputPhoneNumber1" th:value="${loggedInUser.phoneNumber}"
-											readonly>
+										<input type="text" class="form-control" id="exampleInputPhoneNumber1"
+											th:value="${loggedInUser.phoneNumber}" readonly>
 									</div>
 								</div>
 								<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
@@ -149,6 +149,40 @@
 									</div>
 								</div>
 
+								<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
+									<div class="text-right">
+										<!-- Nút Đổi mật khẩu -->
+										<button type="button" id="changePasswordBtn" class="btn btn-primary">Đổi mật
+											khẩu</button>
+									</div>
+
+									<div id="passwordFields" style="display: none;">
+										<div class="row gutters">
+											<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+												<!-- Mật khẩu mới -->
+												<div class="form-group">
+													<label for="exampleInputPassword">Mật khẩu mới:</label>
+													<input type="password" class="form-control"
+														id="newPassword" name="password"
+														placeholder="Nhập mật khẩu mới">
+												</div>
+											</div>
+											<div class="col-xl-6 col-lg-6 col-md-6 col-sm-6 col-12">
+												<!-- Xác nhận mật khẩu mới -->
+												<div class="form-group">
+													<label for="exampleInputConfirmPassword">Xác nhận mật khẩu
+														mới:</label>
+													<input type="password" class="form-control"
+														id="confirmNewPassword" name="confirmPassword"
+														placeholder="Nhập lại mật khẩu mới">
+												</div>
+											</div>
+										</div>
+									</div>
+								</div>
+
+
+
 
 								<div class="row gutters">
 									<div class="col-xl-12 col-lg-12 col-md-12 col-sm-12 col-12">
@@ -168,17 +202,36 @@
 	<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
 	<script>
-    document.addEventListener("DOMContentLoaded", function() {
-        // Lấy ngày hiện tại
-        var today = new Date();
-        // Giảm 18 năm từ ngày hiện tại
-        var maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
-        // Chuyển định dạng ngày thành chuỗi "YYYY-MM-DD"
-        var formattedDate = maxDate.toLocaleDateString('en-CA');
-        // Đặt giá trị max cho trường ngày sinh
-        document.getElementById("exampleInputDOB").max = formattedDate;
-    });
-</script>
+		document.addEventListener("DOMContentLoaded", function () {
+			// Lấy ngày hiện tại
+			var today = new Date();
+			// Giảm 18 năm từ ngày hiện tại
+			var maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate());
+			// Chuyển định dạng ngày thành chuỗi "YYYY-MM-DD"
+			var formattedDate = maxDate.toLocaleDateString('en-CA');
+			// Đặt giá trị max cho trường ngày sinh
+			document.getElementById("exampleInputDOB").max = formattedDate;
+		});
+
+		document.addEventListener("DOMContentLoaded", function () {
+			// Lấy nút "Đổi mật khẩu"
+			var changePasswordBtn = document.getElementById("changePasswordBtn");
+			// Lấy ô nhập mật khẩu mới và xác nhận mật khẩu
+			var passwordFields = document.getElementById("passwordFields");
+
+			// Thêm sự kiện click cho nút "Đổi mật khẩu"
+			changePasswordBtn.addEventListener("click", function () {
+				// Kiểm tra hiện tại trạng thái của ô nhập mật khẩu mới và xác nhận mật khẩu
+				if (passwordFields.style.display === "none") {
+					// Nếu ẩn, hiển thị ô nhập mật khẩu mới và xác nhận mật khẩu
+					passwordFields.style.display = "block";
+				} else {
+					// Nếu hiển thị, ẩn ô nhập mật khẩu mới và xác nhận mật khẩu
+					passwordFields.style.display = "none";
+				}
+			});
+		});
+	</script>
 
 </body>
 
