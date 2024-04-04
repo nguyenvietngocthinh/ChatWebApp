@@ -69,6 +69,19 @@ public class UserController {
 		return "SignUp";
 	}
 
+	@GetMapping("/showFormForgotPassword")
+	private String ForgotPassword(HttpSession session) {
+		// Kiểm tra xem người dùng đã đăng nhập và isOnline là true không
+		if (session.getAttribute("loggedInUser") != null) {
+			User loggedInUser = (User) session.getAttribute("loggedInUser");
+			if (loggedInUser.isOnline()) {
+				// Nếu isOnline là true, chuyển hướng đến trang chính
+				return "redirect:/showFormHome";
+			}
+		}
+		return "ForgotPassword";
+	}
+
 	@GetMapping("/showFormHome")
 	private String HomePage(HttpSession session, Model model) {
 		// Kiểm tra xem người dùng đã đăng nhập hay chưa
@@ -210,6 +223,22 @@ public class UserController {
 		userService.saveUser(loggedInUser);
 		// Chuyển hướng về trang chính sau khi cập nhật thành công
 		return "redirect:/showFormHome";
+	}
+
+	@PostMapping("/updateForgot")
+	public String updateForgotPassword(@RequestParam("phoneNumber") String phoneNumber,
+			@RequestParam("password") String password, Model model) {
+		// Tìm người dùng theo số điện thoại và cập nhật mật khẩu mới
+		User user = userService.findUserByPhoneNumber(phoneNumber);
+		if (user != null) {
+			user.setPassword(password);
+			userService.saveUser(user);
+			return "redirect:/"; // Chuyển hướng đến trang đăng nhập sau khi cập nhật mật khẩu thành công
+		}else {
+			 // Nếu không tìm thấy người dùng, trả về trang cập nhật mật khẩu với thông báo lỗi
+            model.addAttribute("error", "Cập nhật mật khẩu thất bại");
+            return "redirect:/showFormForgotPassword"; // Điều này giả định rằng bạn có một trang forgot_password.html để hiển thị form và thông báo lỗi
+		}
 	}
 
 	@GetMapping("/search")
