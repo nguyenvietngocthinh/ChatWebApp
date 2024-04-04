@@ -19,9 +19,9 @@ public class FriendServiceImpl {
 
 	@Autowired
 	private UserRepository userRepository;
-	
+
 	@Autowired
-    private ChatRoomServiceImpl chatRoomServiceImpl;
+	private ChatRoomServiceImpl chatRoomServiceImpl;
 
 	public boolean isFriend(String phoneNumber1, String phoneNumber2) {
 		// Kiểm tra xem có mối quan hệ bạn bè nào tồn tại giữa hai số điện thoại hay
@@ -42,7 +42,6 @@ public class FriendServiceImpl {
 			friendRepository.save(friend);
 		}
 	}
-	
 
 	public List<User> getFriendListByPhoneNumber(String phoneNumber) {
 		List<Friend> friends = friendRepository.findBySenderOrReceiver(phoneNumber, phoneNumber);
@@ -51,36 +50,27 @@ public class FriendServiceImpl {
 			String friendPhoneNumber = friend.getSender().equals(phoneNumber) ? friend.getReceiver()
 					: friend.getSender();
 			User friendUser = userRepository.findByPhoneNumber(friendPhoneNumber);
-			
-				if (friendUser != null) {
-					if (friend.isStatus() == false) {
-						// So sánh friendUser với vai trò là sender
-						if (friend.getSender().equals(phoneNumber)) {
-							friendUser.setRole("sender");
-						} else {
-							friendUser.setRole("receiver");
-						}
+
+			if (friendUser != null) {
+				if (friend.isStatus() == false) {
+					// So sánh friendUser với vai trò là sender
+					if (friend.getSender().equals(phoneNumber)) {
+						friendUser.setRole("sender");
+					} else {
+						friendUser.setRole("receiver");
 					}
-					friendList.add(friendUser);
 				}
-
-		}
-		return friendList;
-	}
-	
-	public List<User> searchFriendListByPhoneNumber(String phoneNumber) {
-		List<Friend> friends = friendRepository.findBySenderOrReceiver(phoneNumber, phoneNumber);
-		List<User> friendList = new ArrayList<>();
-		for (Friend friend : friends) {
-			String friendPhoneNumber = friend.getSender().equals(phoneNumber) ? friend.getReceiver()
-					: friend.getSender();
-			User friendUser = userRepository.findByPhoneNumber(friendPhoneNumber);
 				friendList.add(friendUser);
+			}
 
 		}
 		return friendList;
 	}
-	
+
+	public List<User> searchFriendListByPhoneNumber(String searchFriends, String loggedInUserPhoneNumber) {
+		return null;    
+	}
+
 
 	public void acceptFriendRequest(String senderPhoneNumber, String receiverPhoneNumber) {
 		// Tìm mối quan hệ bạn bè với senderPhoneNumber và receiverPhoneNumber
@@ -90,9 +80,9 @@ public class FriendServiceImpl {
 			// Đặt trạng thái của mối quan hệ bạn bè thành true
 			friendship.setStatus(true);
 			friendRepository.save(friendship);
-			
+
 			// Tạo chatId và lưu thông tin phòng chat vào cơ sở dữ liệu
-	        String chatId = chatRoomServiceImpl.createChatId(senderPhoneNumber, receiverPhoneNumber);
+			String chatId = chatRoomServiceImpl.createChatId(senderPhoneNumber, receiverPhoneNumber);
 		}
 	}
 

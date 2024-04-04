@@ -149,9 +149,12 @@
 									<input type="text" class="form-control" id="groupName" placeholder="Nhập tên nhóm">
 								</div>
 								<div class="form-group">
-									<label for="searchFriends">Tìm kiếm bạn bè:</label>
-									<input type="text" class="form-control" id="searchFriends"
+									<label for="searchFriendsInput">Tìm kiếm bạn bè:</label>
+									<input type="text" class="form-control" id="searchFriendsInput"
 										placeholder="Tìm kiếm...">
+								</div>
+								<div>
+									<div class="list-group" id="searchFriends"></div>
 								</div>
 							</form>
 						</div>
@@ -292,7 +295,11 @@
 							// Hiển thị kết quả tìm kiếm
 							$("#searchResults").html(response);
 							// Ẩn danh sách bạn bè
+							// Ẩn danh sách nhóm và danh sách bạn bè
+							$("#buttonChange").addClass("hidden");
+							$("#groupChatList").addClass("hidden");
 							$("#friendList").addClass("hidden");
+							
 						},
 						error: function (xhr, status, error) {
 							console.error("Lỗi:", error);
@@ -302,6 +309,7 @@
 			});
 		});
 
+		
 
 		$(document).ready(function () {
 			// Sử dụng sự kiện delegate để xử lý sự kiện click cho các nút được tạo động
@@ -361,8 +369,6 @@
 				// Hiển thị modal
 				$("#addGroupModal").modal("show");
 			});
-			// Đóng modal sau khi tạo nhóm
-			$("#addGroupModal").modal("hide");
 		});
 	</script>
 </body>

@@ -60,6 +60,18 @@
 			background-color: #1E90FF;
 		}
 
+		.btn-outline-second {
+			color: #1E90FF;
+			/* Màu chữ */
+			border-color: #000;
+			/* Màu viền */
+		}
+
+		.btn-outline-second:hover {
+			color: #fff;
+			background-color: #f0f1f2;
+		}
+
 		.btn-outline-secondary:focus {
 			box-shadow: none;
 		}
@@ -88,27 +100,76 @@
 			border-color: #1E90FF;
 			color: #1E90FF;
 		}
+
+		.hidden {
+			display: none;
+		}
+
+		#phoneNum,
+		#verifierOTP {
+			width: 100%;
+			padding: 10px;
+			font-size: 20px;
+			margin-bottom: 5px;
+			outline: none;
+		}
+
+		#recaptcha-container {
+			margin-bottom: 5px;
+		}
+
+		#send,
+		#verify {
+			width: 100%;
+			height: 40px;
+			outline: none;
+		}
+
+		.n-conf {
+			width: 100%;
+			border: 2px solid red;
+			border-radius: 4px;
+			padding: 8px 10px;
+			margin: 4px 0px;
+			background-color: rgba(255, 0, 4, 0.5);
+			display: none;
+		}
 	</style>
 </head>
 
 <body style="background-color: #f0f1f2;">
 
 	<!-- Form -->
-	<div class="container p-2">
-		<div class="row">
-			<div class="col-md-6 offset-md-3">
-				<div class="card">
-					<div class="card-body">
-						<h3 class="text-center">Đăng Ký</h3>
+
+	<div class="row">
+		<div class="col-md-6 offset-md-3">
+			<div class="card">
+				<div class="card-body">
+					<h3 class="text-center">Đăng Ký</h3>
+					<div class="container p-2">
+						<div id="sendOtp">
+							<input type="text" class="form-control" id="phoneNum" required name="phoneNum"
+								placeholder="Nhập SDT" pattern="0[0-9]{9}"
+								title="Số điện thoại phải bắt đầu bằng 0 và có tổng cộng 10 số (bao gồm số 0 đầu tiên)">
+							<div id="recaptcha-container"></div>
+							<input type="button" id="send" value="Gửi OTP" onclick="phoneAuth()" style="margin-bottom: 10px;">
+							<a href="/" class="btn btn-outline-second text-dark">Quay lại</a>
+						</div>
+
+						<div id="verifier" style="display: none;">
+							<input type="text" class="form-control" id="verifierOTP" required placeholder="Nhập OTP">
+							<input type="button" id="verify" value="Xác nhận" onclick="codeverify()">
+							<div class="n-conf">OTP Lỗi</div>
+						</div>
+
 						<form th:action="@{/save}" th:object="${user}" method="post" enctype="multipart/form-data"
-							onsubmit="return validatePassword();">
+							onsubmit="return validatePassword();" id="registrationForm" style="display: none;">
 							<!-- SDT -->
 							<div class="form-group">
 								<label for="exampleInputPhoneNumber1">Số điện thoại</label>
 								<div class="input-group">
-									<input type="text" class="form-control" id="exampleInputPhoneNumber1" required
-										name="phoneNumber" placeholder="Nhập SDT" pattern="0[0-9]{9}"
-										title="Số điện thoại phải bắt đầu bằng 0 và có tổng cộng 10 số (bao gồm số 0 đầu tiên)">
+									<input type="text" class="form-control" id="exampleInputPhoneNumber1"
+										name="phoneNumber" readonly>
 								</div>
 							</div>
 
@@ -117,7 +178,8 @@
 							<div class="form-group">
 								<label for="exampleInputFullName">Họ và tên:</label>
 								<input type="text" class="form-control" id="exampleInputFullName" name="fullName"
-									placeholder="Nhập họ và tên" pattern="[^\d]+" title="Họ và tên không được chứa số">
+									placeholder="Nhập họ và tên" required pattern="[^\d]+"
+									title="Họ và tên không được chứa số">
 							</div>
 
 							<!-- Ngay sinh -->
@@ -174,6 +236,65 @@
 		integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
 		crossorigin="anonymous"></script>
 
+
+	<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-app-compat.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-auth-compat.js"></script>
+
+
+	<script>
+		const firebaseConfig = {
+			apiKey: "AIzaSyAOHGl3RzGuYknJ78TYkI7k_4euwiWnJ5o",
+			authDomain: "chatapp-c3682.firebaseapp.com",
+			projectId: "chatapp-c3682",
+			storageBucket: "chatapp-c3682.appspot.com",
+			messagingSenderId: "501556005640",
+			appId: "1:501556005640:web:dc2c304a668be990487abd"
+		};
+		firebase.initializeApp(firebaseConfig);
+		render();
+		function render() {
+			window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
+			recaptchaVerifier.render();
+		}
+
+		// function for send OTP
+		function phoneAuth() {
+			var number = document.getElementById('phoneNum').value;
+			var countryCode = "+84"; // Mã quốc gia cho Việt Nam
+			var phoneNumber = countryCode + number; // Kết hợp mã quốc gia và số điện thoại
+			firebase.auth().signInWithPhoneNumber(phoneNumber, window.recaptchaVerifier)
+				.then(function (confirmationResult) {
+					window.confirmationResult = confirmationResult;
+					coderesult = confirmationResult;
+					document.getElementById('sendOtp').style.display = 'none';
+					document.getElementById('verifier').style.display = 'block';
+				})
+				.catch(function (error) {
+					// Xử lý lỗi khi gửi OTP
+					alert(error.message);
+				});
+		}
+
+
+		// function for OTP verify
+		function codeverify() {
+			var code = document.getElementById('verifierOTP').value;
+			coderesult.confirm(code).then(function () {
+				document.getElementById('verifier').style.display = 'none';
+				document.getElementById('registrationForm').style.display = 'block';
+
+				// Lấy giá trị số điện thoại đã nhập từ trường #phoneNum
+				var phoneNumber = document.getElementById('phoneNum').value;
+
+				// Gán giá trị số điện thoại vào trường #exampleInputPhoneNumber1
+				document.getElementById('exampleInputPhoneNumber1').value = phoneNumber;
+			}).catch(function () {
+				document.getElementsByClassName('n-conf').style.display = 'block';
+			})
+		}
+
+
+	</script>
 
 	<script>
 		// Lấy ngày hiện tại
