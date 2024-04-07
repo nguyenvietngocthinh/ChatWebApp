@@ -51,6 +51,7 @@ public class UserServiceImpl {
 	    List<User> foundUsers = new ArrayList<>();
 	    // Tìm kiếm người dùng theo số điện thoại 
 	    foundUsers.addAll(userRepository.findByPhoneNumberContainingIgnoreCase(searchText));
+	   
 	    // Loại bỏ người dùng hiện tại khỏi kết quả tìm kiếm
 	    foundUsers.removeIf(user -> user.getPhoneNumber().equals(loggedInUserPhoneNumber));
 	    

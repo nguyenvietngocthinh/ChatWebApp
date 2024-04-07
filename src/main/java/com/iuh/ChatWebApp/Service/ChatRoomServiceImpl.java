@@ -1,5 +1,6 @@
 package com.iuh.ChatWebApp.Service;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,5 +32,16 @@ public class ChatRoomServiceImpl {
 		chatRoomRepository.save(receiverSender);
 
 		return chatId;
+	}
+	
+	public void createGroupChat(String groupName, String senderId, List<String> selectedFriends) {
+	    // Lưu thông tin phòng chat vào cơ sở dữ liệu
+	    // Lưu senderId của bạn tạo nhóm
+	    chatRoomRepository.save(ChatRoom.builder().chatId(groupName).senderId(senderId).build());
+
+	    // Lưu senderId của mỗi bạn bè đã chọn
+	    for (String friendId : selectedFriends) {
+	        chatRoomRepository.save(ChatRoom.builder().chatId(groupName).senderId(friendId).build());
+	    }
 	}
 }

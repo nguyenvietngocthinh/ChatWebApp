@@ -152,7 +152,8 @@
 								placeholder="Nhập SDT" pattern="0[0-9]{9}"
 								title="Số điện thoại phải bắt đầu bằng 0 và có tổng cộng 10 số (bao gồm số 0 đầu tiên)">
 							<div id="recaptcha-container"></div>
-							<input type="button" id="send" value="Gửi OTP" onclick="phoneAuth()" style="margin-bottom: 10px;">
+							<input type="button" id="send" value="Gửi OTP" onclick="phoneAuth()"
+								style="margin-bottom: 10px;">
 							<a href="/" class="btn btn-outline-second text-dark">Quay lại</a>
 						</div>
 
@@ -276,7 +277,7 @@
 		}
 
 
-		// function for OTP verify
+
 		function codeverify() {
 			var code = document.getElementById('verifierOTP').value;
 			coderesult.confirm(code).then(function () {
@@ -292,6 +293,7 @@
 				document.getElementsByClassName('n-conf').style.display = 'block';
 			})
 		}
+
 
 
 	</script>

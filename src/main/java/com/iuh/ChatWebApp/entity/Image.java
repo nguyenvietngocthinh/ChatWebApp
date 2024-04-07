@@ -25,10 +25,4 @@ public class Image {
 	private int id;
 	private String name;
 	
-	@Transient
-	public String getImageSendPath() {
-		if(name == null || id == 0) return null;
-		
-		return "/images-send/" + id + "/" + name;
-	}
 }

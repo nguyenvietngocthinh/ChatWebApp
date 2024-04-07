@@ -62,12 +62,6 @@
 			<artifactId>spring-boot-starter-tomcat</artifactId>
 		</dependency>
 
-		<dependency>
-			<groupId>com.twilio.sdk</groupId>
-			<artifactId>twilio</artifactId>
-			<version>8.23.0</version>
-		</dependency>
-
 	</dependencies>
 
 	<build>

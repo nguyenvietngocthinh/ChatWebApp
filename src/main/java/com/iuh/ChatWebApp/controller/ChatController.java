@@ -12,6 +12,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
@@ -61,19 +62,23 @@ public class ChatController {
 	public void processMessage(@Payload ChatMessage chatMessage) {
 		ChatMessage savedMsg = chatMessageServiceImpl.save(chatMessage);
 
-	    messagingTemplate.convertAndSendToUser(
-	        chatMessage.getReceiverId(), "/queue/messages",
-	        new ChatNotification(
-	            savedMsg.getId(),
-	            savedMsg.getSenderId(),
-	            savedMsg.getReceiverId(),
-	            savedMsg.getContent()
-	        )
-	    );
-	
+		messagingTemplate.convertAndSendToUser(chatMessage.getReceiverId(), "/queue/messages", new ChatNotification(
+				savedMsg.getId(), savedMsg.getSenderId(), savedMsg.getReceiverId(), savedMsg.getContent()));
+
 	}
-	
-	
+
+	@PostMapping("/createGroupChat")
+	public String createGroupChat(@RequestParam("groupName") String groupName,
+			@RequestParam("selectedFriends") List<String> selectedFriends, HttpSession session) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		String senderPhoneNumber = loggedInUser.getPhoneNumber();
+
+		// Gọi service để tạo phòng chat nhóm
+		chatRoomServiceImpl.createGroupChat(groupName, senderPhoneNumber, selectedFriends);
+
+		// Chuyển hướng người dùng đến trang nào đó sau khi tạo phòng chat thành công
+		return "redirect:/HomePage";
+	}
 
 	@GetMapping("/messages/{senderId}/{receiverId}")
 	public ResponseEntity<List<ChatMessage>> findChatMessages(@PathVariable String senderId,

@@ -67,11 +67,6 @@ public class FriendServiceImpl {
 		return friendList;
 	}
 
-	public List<User> searchFriendListByPhoneNumber(String searchFriends, String loggedInUserPhoneNumber) {
-		return null;    
-	}
-
-
 	public void acceptFriendRequest(String senderPhoneNumber, String receiverPhoneNumber) {
 		// Tìm mối quan hệ bạn bè với senderPhoneNumber và receiverPhoneNumber
 		Friend friendship = friendRepository.findBySenderAndReceiver(senderPhoneNumber, receiverPhoneNumber);
@@ -93,6 +88,34 @@ public class FriendServiceImpl {
 			// Nếu tồn tại, xóa yêu cầu kết bạn
 			friendRepository.delete(existingFriendship);
 		}
+	}
+
+	public List<User> searchFriends(String searchFriendsInput, String loggedInUserPhoneNumber) {
+		List<User> friendUsers = new ArrayList<>();
+
+		// Tìm kiếm người dùng theo chuỗi tìm kiếm
+		List<User> foundUsers = new ArrayList<>();
+		
+		foundUsers.addAll(userRepository.findByPhoneNumberContainingIgnoreCase(searchFriendsInput));
+		
+
+		// Loại bỏ người dùng hiện tại khỏi kết quả tìm kiếm
+		foundUsers.removeIf(user -> user.getPhoneNumber().equals(loggedInUserPhoneNumber));
+
+		// Lấy danh sách bạn bè của người dùng đăng nhập
+		List<User> friendList = getFriendListByPhoneNumber(loggedInUserPhoneNumber);
+		
+
+		// Lọc ra các người dùng là bạn bè từ kết quả tìm kiếm
+		for (User user : foundUsers) {
+			if (friendList.contains(user)) {
+				friendUsers.add(user);
+			}
+		}
+
+		return friendUsers;
+		
+
 	}
 
 }

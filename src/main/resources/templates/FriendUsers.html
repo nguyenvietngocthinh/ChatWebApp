@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+	<meta charset="UTF-8">
+	<title>Insert title here</title>
+	<style>
+		/* Điều chỉnh kích thước của hình ảnh */
+		img {
+			width: 40px;
+			/* Độ rộng 40px */
+			height: 40px;
+			/* Chiều cao 40px */
+			border-radius: 50%;
+			/* Bo tròn ảnh để tạo hình tròn */
+			margin-right: 10px;
+			/* Khoảng cách bên phải của ảnh */
+		}
+
+		/* Sử dụng flexbox để căn chỉnh các phần tử */
+		label {
+			display: flex;
+			/* Sử dụng flexbox để căn chỉnh các phần tử */
+			align-items: center;
+			/* Căn chỉnh các phần tử theo chiều dọc */
+			width: 450px;
+			/* Độ rộng của label */
+			margin-bottom: 10px;
+			/* Khoảng cách dưới của mỗi label */
+		}
+
+		/* Phần tử span chứa tên bạn bè */
+		span {
+			flex-grow: 1;
+			/* Phần tử này sẽ mở rộng để chiếm hết phần còn trống */
+		}
+
+		/* Nút input */
+		input[type="checkbox"] {
+			width: 20px;
+			/* Độ rộng của checkbox */
+			height: 20px;
+			/* Chiều cao của checkbox */
+		}
+	</style>
+</head>
+
+<body>
+	<form id="friendForm">
+		<div th:each="friend : ${friendUsers}">
+			<label>
+				<!-- Hiển thị hình ảnh -->
+				<img th:src="@{'images/' + ${friend.avatar}}">
+				<!-- Hiển thị tên của bạn bè -->
+				<span th:text="${friend.fullName}"></span>
+				<!-- Sử dụng input type="checkbox" để chọn bạn bè -->
+				<input type="checkbox" id="selectedFriends" th:value="${friend.phoneNumber}" />
+			</label>
+		</div>
+	</form>
+
+	<script>
+		
+		var selectedFriends = [];
+		// Lắng nghe sự kiện khi người dùng chọn bạn bè
+		$(document).on("change", "input[type='checkbox']", function () {
+			var phoneNumber = $(this).val(); // Lấy phoneNumber của bạn bè tương ứng với ô checkbox
+
+			if ($(this).is(":checked")) {
+				// Nếu ô checkbox được tích vào, thêm phoneNumber vào danh sách
+				selectedFriends.push(phoneNumber);
+				console.log(selectedFriends);
+			} else {
+				// Nếu ô checkbox được bỏ tích, loại bỏ phoneNumber khỏi danh sách
+				selectedFriends = selectedFriends.filter(function (item) {
+					return item !== phoneNumber;
+				});
+			}
+		});
+	</script>
+</body>
+
+</html>

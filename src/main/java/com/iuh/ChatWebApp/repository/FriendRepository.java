@@ -11,7 +11,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 public interface FriendRepository extends JpaRepository<Friend, Integer> {
 	// Trong FriendRepository
 	Friend findBySenderAndReceiver(String senderPhoneNumber, String receiverPhoneNumber);
-
+	
 	boolean existsBySenderAndReceiver(String senderPhoneNumber, String receiverPhoneNumber);
 
 	List<Friend> findBySenderOrReceiver(String phoneNumber, String phoneNumber2);
@@ -21,8 +21,5 @@ public interface FriendRepository extends JpaRepository<Friend, Integer> {
 	List<Friend> findByReceiver(String phoneNumber);
 
 	void deleteBySenderAndReceiver(String senderPhoneNumber, String receiverPhoneNumber);
-
-	
-	
 
 }

@@ -152,9 +152,10 @@
 									<label for="searchFriendsInput">Tìm kiếm bạn bè:</label>
 									<input type="text" class="form-control" id="searchFriendsInput"
 										placeholder="Tìm kiếm...">
+
 								</div>
-								<div>
-									<div class="list-group" id="searchFriends"></div>
+								<div class="list-group" id="friendUsers">
+
 								</div>
 							</form>
 						</div>
@@ -272,6 +273,32 @@
 		});
 
 
+		$(document).ready(function () {
+			// Lắng nghe sự kiện khi người dùng nhập vào ô tìm kiếm
+			$("#searchFriendsInput").on("keyup", function () {
+				var searchTextFriend = $(this).val().trim(); // Lấy giá trị từ ô tìm kiếm
+				if (searchTextFriend !== "") {
+					// Nếu ô tìm kiếm không trống, gửi yêu cầu AJAX để tìm kiếm bạn bè
+					$.ajax({
+						url: "/searchFriends", // Địa chỉ URL của endpoint xử lý tìm kiếm bạn bè
+						method: "GET",
+						data: {
+							searchFriendsInput: searchTextFriend // Truyền dữ liệu tìm kiếm
+						},
+						success: function (response) {
+							$("#friendUsers").removeClass("hidden");
+							$("#friendUsers").html(response); // Thêm kết quả tìm kiếm vào div friendUsers
+						},
+						error: function (xhr, status, error) {
+							console.error("Lỗi khi tìm kiếm bạn bè:", error);
+						}
+					});
+				} else {
+					$("#friendUsers").addClass("hidden"); // Ẩn phần friendUsers nếu không có kết quả tìm kiếm
+				}
+			});
+		});
+
 		// Truyền dữ liệu tìm kiếm từ frontend lên backend thông qua Ajax.
 		$(document).ready(function () {
 			// Lắng nghe sự kiện khi người dùng nhập vào ô tìm kiếm
@@ -294,12 +321,13 @@
 						success: function (response) {
 							// Hiển thị kết quả tìm kiếm
 							$("#searchResults").html(response);
+							console.log("friendUsers element:", $("#searchResults"));
 							// Ẩn danh sách bạn bè
 							// Ẩn danh sách nhóm và danh sách bạn bè
 							$("#buttonChange").addClass("hidden");
 							$("#groupChatList").addClass("hidden");
 							$("#friendList").addClass("hidden");
-							
+
 						},
 						error: function (xhr, status, error) {
 							console.error("Lỗi:", error);
@@ -309,7 +337,7 @@
 			});
 		});
 
-		
+
 
 		$(document).ready(function () {
 			// Sử dụng sự kiện delegate để xử lý sự kiện click cho các nút được tạo động
@@ -364,12 +392,38 @@
 		});
 
 		$(document).ready(function () {
-			// Xử lý sự kiện khi nhấn nút "group_add"
-			$("#addGroupBtn").click(function () {
-				// Hiển thị modal
-				$("#addGroupModal").modal("show");
+			// Lắng nghe sự kiện click cho nút "Tạo nhóm"
+			$("#createGroupBtn").click(function () {
+				// Lấy tên nhóm từ input có id là "groupName"
+				var groupName = $("#groupName").val().trim();
+				// Lấy danh sách bạn bè được chọn
+				var selectedFriends = [];
+				$("input[name='selectedFriends']:checked").each(function () {
+					selectedFriends.push($(this).val());
+				});
+
+				// Gửi yêu cầu AJAX đến endpoint /createGroupChat
+				$.ajax({
+					url: "/createGroupChat", // Địa chỉ URL của endpoint xử lý tạo nhóm
+					method: "POST",
+					data: {
+						groupName: groupName, // Truyền tên nhóm
+						selectedFriends: selectedFriends // Truyền danh sách bạn bè được chọn
+					},
+					success: function (response) {
+						// Xử lý khi tạo nhóm thành công, ví dụ: chuyển hướng đến trang homepage
+						window.location.href = "/HomePage";
+					},
+					error: function (xhr, status, error) {
+						console.error("Lỗi khi tạo nhóm:", error);
+						// Xử lý khi có lỗi xảy ra
+					}
+				});
 			});
 		});
+
+
+
 	</script>
 </body>
 

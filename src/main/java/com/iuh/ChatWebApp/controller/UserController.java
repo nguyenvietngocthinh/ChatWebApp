@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.util.StringUtils;
@@ -19,6 +21,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -149,6 +152,11 @@ public class UserController {
 		}
 
 	}
+	
+	/* 
+	 * login
+	 * 
+	 * */
 
 	@PostMapping("/doLogin")
 	public String doLogin(@RequestParam("phoneNumber") String phoneNumber, @RequestParam("password") String password,
@@ -173,6 +181,26 @@ public class UserController {
 		}
 	}
 
+	@PostMapping("/loginMobile")
+	public ResponseEntity<?> loginMobile(@RequestParam("phoneNumber") String phoneNumber,
+			@RequestParam("password") String password, HttpSession session) {
+		User user = userService.findByPhoneNumberAndPassword(phoneNumber, password);
+
+		if (user != null) {
+			user.setOnline(true);
+			userService.saveUser(user);
+			session.setAttribute("loggedInUser", user);
+			return ResponseEntity.ok(user);
+		} else {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Phone number or password is incorrect");
+		}
+	}
+	
+	/* 
+	 * logout
+	 * 
+	 * */
+
 	@GetMapping("/logout")
 	public String logout(HttpSession session) {
 		// Lấy người dùng đã đăng nhập từ session
@@ -187,6 +215,22 @@ public class UserController {
 		session.removeAttribute("loggedInUser");
 		return "redirect:/";
 	}
+	
+	 @PostMapping("/logoutMobile")
+	    public ResponseEntity<?> logoutMobile(HttpSession session) {
+	        User loggedInUser = (User) session.getAttribute("loggedInUser");
+	        if (loggedInUser != null) {
+	            loggedInUser.setOnline(false);
+	            userService.saveUser(loggedInUser);
+	            session.removeAttribute("loggedInUser");
+	        }
+	        return ResponseEntity.ok().build();
+	    }
+	
+	/* 
+	 * Update
+	 * 
+	 * */
 
 	@PostMapping("/update")
 	public String updateUser(@ModelAttribute @Validated User updatedUser, BindingResult bindingResult,
@@ -224,6 +268,48 @@ public class UserController {
 		// Chuyển hướng về trang chính sau khi cập nhật thành công
 		return "redirect:/showFormHome";
 	}
+	
+	  @PostMapping("/updateMobile")
+	    public ResponseEntity<?> updateUser(@RequestBody @Validated User updatedUser,
+	                                         BindingResult bindingResult,
+	                                         HttpSession session) {
+	        User loggedInUser = (User) session.getAttribute("loggedInUser");
+
+	        if (loggedInUser == null) {
+	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not logged in");
+	        }
+
+	        if (bindingResult.hasErrors()) {
+	            return ResponseEntity.badRequest().body("Invalid user data");
+	        }
+
+	        if (!updatedUser.getPassword().isEmpty()) {
+	            loggedInUser.setPassword(updatedUser.getPassword());
+	        }
+	        
+	        if (!updatedUser.getFullName().isEmpty()) {
+	            loggedInUser.setFullName(updatedUser.getFullName());
+	        }
+	        
+	        if (!updatedUser.getGender().isEmpty()) {
+	            loggedInUser.setGender(updatedUser.getGender());
+	        }
+	        
+	        if (updatedUser.getDob() != null) {
+	            loggedInUser.setDob(updatedUser.getDob());
+	        }
+
+	        userService.saveUser(loggedInUser);
+
+	        return ResponseEntity.ok().build();
+	    }
+
+	    
+	
+	/* 
+	 * Update Forgot
+	 * 
+	 * */
 
 	@PostMapping("/updateForgot")
 	public String updateForgotPassword(@RequestParam("phoneNumber") String phoneNumber,
@@ -234,13 +320,34 @@ public class UserController {
 			user.setPassword(password);
 			userService.saveUser(user);
 			return "redirect:/"; // Chuyển hướng đến trang đăng nhập sau khi cập nhật mật khẩu thành công
-		}else {
-			 // Nếu không tìm thấy người dùng, trả về trang cập nhật mật khẩu với thông báo lỗi
-            model.addAttribute("error", "Cập nhật mật khẩu thất bại");
-            return "redirect:/showFormForgotPassword"; // Điều này giả định rằng bạn có một trang forgot_password.html để hiển thị form và thông báo lỗi
+		} else {
+			// Nếu không tìm thấy người dùng, trả về trang cập nhật mật khẩu với thông báo
+			// lỗi
+			model.addAttribute("error", "Cập nhật mật khẩu thất bại");
+			return "redirect:/showFormForgotPassword"; // Điều này giả định rằng bạn có một trang forgot_password.html
+														// để hiển thị form và thông báo lỗi
 		}
 	}
 
+	@PostMapping("/updateForgotMobile")
+	public ResponseEntity<?> updateForgotPasswordMobile(@RequestParam("phoneNumber") String phoneNumber,
+			@RequestParam("password") String password) {
+		User user = userService.findUserByPhoneNumber(phoneNumber);
+
+		if (user != null) {
+			user.setPassword(password);
+			userService.saveUser(user);
+			return ResponseEntity.ok().build();
+		} else {
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+		}
+	}
+
+	
+	/* 
+	 * Search
+	 * 
+	 * */
 	@GetMapping("/search")
 	public String searchUsers(@RequestParam("searchText") String searchText, Model model, HttpSession session) {
 		// Lấy người dùng đã đăng nhập từ session
@@ -262,4 +369,16 @@ public class UserController {
 		return "SearchResults";
 	}
 
+	@GetMapping("/searchMobile")
+	public ResponseEntity<List<User>> searchUsersMobile(@RequestParam("searchText") String searchText,
+			HttpSession session) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+
+		if (loggedInUser == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		List<User> foundUsers = userService.searchUsers(searchText, loggedInUser.getPhoneNumber());
+		return ResponseEntity.ok(foundUsers);
+	}
 }

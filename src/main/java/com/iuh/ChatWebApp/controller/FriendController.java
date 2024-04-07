@@ -69,8 +69,25 @@ public class FriendController {
 	}
 	
 	@GetMapping("/searchFriends")
-    public String searchFriendListByPhoneNumber(@RequestParam("searchFriendsInput") String searchFriendsInput, Model model, HttpSession session) {
-        return "";
-    }
+	public String searchUsers(@RequestParam("searchFriendsInput") String searchFriendsInput, Model model, HttpSession session) {
+		// Lấy người dùng đã đăng nhập từ session
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
 
-}
+		// Kiểm tra xem người dùng đã đăng nhập hay chưa
+		if (loggedInUser == null) {
+			// Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
+			return "redirect:/";
+		}
+
+		// Thực hiện tìm kiếm người dùng với searchText
+		List<User> friendUsers = friendService.searchFriends(searchFriendsInput, loggedInUser.getPhoneNumber());
+
+		// Thêm danh sách người dùng tìm được vào model để hiển thị trên trang
+		model.addAttribute("friendUsers", friendUsers);
+
+		// Trả về view hiển thị danh sách người dùng tìm được
+		return "FriendUsers";
+	}
+
+	
+} 
