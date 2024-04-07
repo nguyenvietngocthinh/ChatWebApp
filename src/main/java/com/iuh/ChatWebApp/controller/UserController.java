@@ -180,21 +180,6 @@ public class UserController {
 			return "redirect:/";
 		}
 	}
-
-	@PostMapping("/loginMobile")
-	public ResponseEntity<?> loginMobile(@RequestParam("phoneNumber") String phoneNumber,
-			@RequestParam("password") String password, HttpSession session) {
-		User user = userService.findByPhoneNumberAndPassword(phoneNumber, password);
-
-		if (user != null) {
-			user.setOnline(true);
-			userService.saveUser(user);
-			session.setAttribute("loggedInUser", user);
-			return ResponseEntity.ok(user);
-		} else {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Phone number or password is incorrect");
-		}
-	}
 	
 	/* 
 	 * logout
@@ -216,16 +201,6 @@ public class UserController {
 		return "redirect:/";
 	}
 	
-	 @PostMapping("/logoutMobile")
-	    public ResponseEntity<?> logoutMobile(HttpSession session) {
-	        User loggedInUser = (User) session.getAttribute("loggedInUser");
-	        if (loggedInUser != null) {
-	            loggedInUser.setOnline(false);
-	            userService.saveUser(loggedInUser);
-	            session.removeAttribute("loggedInUser");
-	        }
-	        return ResponseEntity.ok().build();
-	    }
 	
 	/* 
 	 * Update
@@ -269,43 +244,6 @@ public class UserController {
 		return "redirect:/showFormHome";
 	}
 	
-	  @PostMapping("/updateMobile")
-	    public ResponseEntity<?> updateUser(@RequestBody @Validated User updatedUser,
-	                                         BindingResult bindingResult,
-	                                         HttpSession session) {
-	        User loggedInUser = (User) session.getAttribute("loggedInUser");
-
-	        if (loggedInUser == null) {
-	            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User is not logged in");
-	        }
-
-	        if (bindingResult.hasErrors()) {
-	            return ResponseEntity.badRequest().body("Invalid user data");
-	        }
-
-	        if (!updatedUser.getPassword().isEmpty()) {
-	            loggedInUser.setPassword(updatedUser.getPassword());
-	        }
-	        
-	        if (!updatedUser.getFullName().isEmpty()) {
-	            loggedInUser.setFullName(updatedUser.getFullName());
-	        }
-	        
-	        if (!updatedUser.getGender().isEmpty()) {
-	            loggedInUser.setGender(updatedUser.getGender());
-	        }
-	        
-	        if (updatedUser.getDob() != null) {
-	            loggedInUser.setDob(updatedUser.getDob());
-	        }
-
-	        userService.saveUser(loggedInUser);
-
-	        return ResponseEntity.ok().build();
-	    }
-
-	    
-	
 	/* 
 	 * Update Forgot
 	 * 
@@ -326,20 +264,6 @@ public class UserController {
 			model.addAttribute("error", "Cập nhật mật khẩu thất bại");
 			return "redirect:/showFormForgotPassword"; // Điều này giả định rằng bạn có một trang forgot_password.html
 														// để hiển thị form và thông báo lỗi
-		}
-	}
-
-	@PostMapping("/updateForgotMobile")
-	public ResponseEntity<?> updateForgotPasswordMobile(@RequestParam("phoneNumber") String phoneNumber,
-			@RequestParam("password") String password) {
-		User user = userService.findUserByPhoneNumber(phoneNumber);
-
-		if (user != null) {
-			user.setPassword(password);
-			userService.saveUser(user);
-			return ResponseEntity.ok().build();
-		} else {
-			return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
 		}
 	}
 

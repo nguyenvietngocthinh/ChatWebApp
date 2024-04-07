@@ -1,9 +1,13 @@
 package com.iuh.ChatWebApp.controller;
 
+
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
@@ -79,6 +83,8 @@ public class ChatController {
 		// Chuyển hướng người dùng đến trang nào đó sau khi tạo phòng chat thành công
 		return "redirect:/HomePage";
 	}
+	
+	
 
 	@GetMapping("/messages/{senderId}/{receiverId}")
 	public ResponseEntity<List<ChatMessage>> findChatMessages(@PathVariable String senderId,
