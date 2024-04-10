@@ -35,13 +35,14 @@ public class ChatRoomServiceImpl {
 	}
 	
 	public void createGroupChat(String groupName, String senderId, List<String> selectedFriends) {
+		var chatGroupId = String.format("Group_%s", groupName);
 	    // Lưu thông tin phòng chat vào cơ sở dữ liệu
 	    // Lưu senderId của bạn tạo nhóm
-	    chatRoomRepository.save(ChatRoom.builder().chatId(groupName).senderId(senderId).build());
+	    chatRoomRepository.save(ChatRoom.builder().chatId(chatGroupId).senderId(senderId).build());
 
 	    // Lưu senderId của mỗi bạn bè đã chọn
 	    for (String friendId : selectedFriends) {
-	        chatRoomRepository.save(ChatRoom.builder().chatId(groupName).senderId(friendId).build());
+	        chatRoomRepository.save(ChatRoom.builder().chatId(chatGroupId).senderId(friendId).build());
 	    }
 	}
 }

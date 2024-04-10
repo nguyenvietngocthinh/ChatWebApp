@@ -88,42 +88,4 @@ public class FriendController {
 	    return "redirect:/showFormHome";
 	}
 	
-	
-	/* 
-	 * SearchFriends
-	 * 
-	 * */
-	
-	@GetMapping("/searchFriends")
-	public String searchUsers(@RequestParam("searchFriendsInput") String searchFriendsInput, Model model, HttpSession session) {
-		// Lấy người dùng đã đăng nhập từ session
-		User loggedInUser = (User) session.getAttribute("loggedInUser");
-
-		// Kiểm tra xem người dùng đã đăng nhập hay chưa
-		if (loggedInUser == null) {
-			// Nếu chưa đăng nhập, chuyển hướng đến trang đăng nhập
-			return "redirect:/";
-		}
-
-		// Thực hiện tìm kiếm người dùng với searchText
-		List<User> friendUsers = friendService.searchFriends(searchFriendsInput, loggedInUser.getPhoneNumber());
-
-		// Thêm danh sách người dùng tìm được vào model để hiển thị trên trang
-		model.addAttribute("friendUsers", friendUsers);
-
-		// Trả về view hiển thị danh sách người dùng tìm được
-		return "FriendUsers";
-	}
-	
-	@GetMapping("/searchFriendsMobile")
-    public ResponseEntity<List<User>> searchFriendsMobile(@RequestParam("searchFriendsInput") String searchFriendsInput, HttpSession session) {
-        User loggedInUser = (User) session.getAttribute("loggedInUser");
-        if (loggedInUser == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
-        }
-        List<User> friendUsers = friendService.searchFriends(searchFriendsInput, loggedInUser.getPhoneNumber());
-        return ResponseEntity.ok(friendUsers);
-    }
-
-	
 } 

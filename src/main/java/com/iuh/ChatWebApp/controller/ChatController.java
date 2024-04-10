@@ -1,6 +1,5 @@
 package com.iuh.ChatWebApp.controller;
 
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -17,7 +16,9 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistration;
 import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 
@@ -27,6 +28,7 @@ import com.iuh.ChatWebApp.Service.UserServiceImpl;
 import com.iuh.ChatWebApp.entity.ChatMessage;
 import com.iuh.ChatWebApp.entity.ChatNotification;
 import com.iuh.ChatWebApp.entity.User;
+import com.iuh.ChatWebApp.entity.dto.GroupChatRequest;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -71,20 +73,36 @@ public class ChatController {
 
 	}
 
+//	@PostMapping("/createGroupChat")
+//	public String createGroupChat(@RequestParam("groupName") String groupName,
+//			@RequestBody List<String> selectedFriends, HttpSession session) {
+//		User loggedInUser = (User) session.getAttribute("loggedInUser");
+//
+//		String senderId = loggedInUser.getPhoneNumber();
+//
+//		chatRoomServiceImpl.createGroupChat(groupName, senderId, selectedFriends);
+//		return "redirect:/HomePage"; // Chuyển hướng sau khi tạo nhóm chat thành công
+//	}
+
 	@PostMapping("/createGroupChat")
-	public String createGroupChat(@RequestParam("groupName") String groupName,
-			@RequestParam("selectedFriends") List<String> selectedFriends, HttpSession session) {
+	@ResponseBody
+	public ResponseEntity<String> createGroupChat(@RequestBody GroupChatRequest groupChatRequest, HttpSession session) {
+		String groupName = groupChatRequest.getGroupName();
+		List<String> selectedFriends = groupChatRequest.getSelectedFriends();
+
 		User loggedInUser = (User) session.getAttribute("loggedInUser");
-		String senderPhoneNumber = loggedInUser.getPhoneNumber();
 
-		// Gọi service để tạo phòng chat nhóm
-		chatRoomServiceImpl.createGroupChat(groupName, senderPhoneNumber, selectedFriends);
+		String senderId = loggedInUser.getPhoneNumber();
 
-		// Chuyển hướng người dùng đến trang nào đó sau khi tạo phòng chat thành công
-		return "redirect:/HomePage";
+		chatRoomServiceImpl.createGroupChat(groupName, senderId, selectedFriends);
+
+		// Xử lý dữ liệu ở đây
+		System.out.println("Group name: " + groupName);
+		System.out.println("Selected friends: " + selectedFriends);
+
+		// Trả về mã trạng thái 200 OK và một thông báo thành công
+		return ResponseEntity.ok("Group chat created successfully.");
 	}
-	
-	
 
 	@GetMapping("/messages/{senderId}/{receiverId}")
 	public ResponseEntity<List<ChatMessage>> findChatMessages(@PathVariable String senderId,

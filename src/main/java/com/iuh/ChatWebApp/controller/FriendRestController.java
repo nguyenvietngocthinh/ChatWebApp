@@ -1,8 +1,11 @@
 package com.iuh.ChatWebApp.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -49,5 +52,15 @@ public class FriendRestController {
         }
         friendService.cancelFriendRequest(friendPhoneNumber, loggedInUser.getPhoneNumber());
         return ResponseEntity.ok("Từ chối kết bạn");
+    }
+	
+	@GetMapping("/searchFriendsM")
+    public ResponseEntity<List<User>> searchFriends(@RequestParam("searchFriendsInput") String searchFriendsInput, HttpSession session) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        if (loggedInUser == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+        }
+        List<User> friendUsers = friendService.searchFriends(searchFriendsInput, loggedInUser.getPhoneNumber());
+        return ResponseEntity.ok(friendUsers);
     }
 }
