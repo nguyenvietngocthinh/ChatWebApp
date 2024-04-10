@@ -1,7 +1,9 @@
 package com.iuh.ChatWebApp.Service;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -29,5 +31,18 @@ public class ChatMessageServiceImpl {
     public List<ChatMessage> findChatMessages(String senderId, String receiverId) {
         var chatId = chatRoomServiceImpl.getChatRoomId(senderId, receiverId);
         return chatId.map(repository::findByChatId).orElse(new ArrayList<>());
+    }
+    
+    public boolean deleteChatMessageByTimestamp(long timestamp) {
+        // Lấy danh sách tin nhắn dựa trên timestamp
+        List<ChatMessage> messages = repository.findByTimestamp(new Date(timestamp));
+        
+        if (!messages.isEmpty()) {
+            // Xóa các tin nhắn tìm thấy
+            repository.deleteAll(messages);
+            return true;
+        } else {
+            return false;
+        }
     }
 }

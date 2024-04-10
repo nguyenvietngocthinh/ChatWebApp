@@ -178,19 +178,20 @@
 					</div>
 				</div>
 
-				<div class="buttonChange">
-					<button class="btn btn-link icon-btn" id="showFriendListBtn">
-						<i class="material-icons">people</i> <!-- Biểu tượng danh sách bạn bè -->
-					</button>
-					<!-- Thay thế nút "Nhóm chat" bằng biểu tượng -->
-					<button class="btn btn-link icon-btn" id="showGroupChatBtn">
-						<i class="material-icons">chat</i> <!-- Biểu tượng nhóm chat -->
-					</button>
-				</div>
+
 
 				<div class="list-group" id="searchResults"></div>
 
 				<div class="list-group" id="friendList">
+					<div class="buttonChange">
+						<button class="btn btn-link icon-btn" id="showFriendListBtn">
+							<i class="material-icons">people</i> <!-- Biểu tượng danh sách bạn bè -->
+						</button>
+						<!-- Thay thế nút "Nhóm chat" bằng biểu tượng -->
+						<button class="btn btn-link icon-btn" id="showGroupChatBtn">
+							<i class="material-icons">chat</i> <!-- Biểu tượng nhóm chat -->
+						</button>
+					</div>
 					<!-- Hiển thị danh sách bạn bè ở đây -->
 					<!-- Sử dụng Thymeleaf để lặp qua danh sách bạn bè và hiển thị từng người dùng -->
 					<div th:each="friend : ${friendList}">

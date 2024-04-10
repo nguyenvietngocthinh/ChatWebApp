@@ -12,6 +12,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -62,7 +63,7 @@ public class ChatRestController {
 			return ResponseEntity.notFound().build();
 		}
 	}
-	
+
 	@MessageMapping("/chatM")
 	public void processMessageM(@Payload ChatMessage chatMessage) {
 		ChatMessage savedMsg = chatMessageServiceImpl.save(chatMessage);
@@ -72,13 +73,23 @@ public class ChatRestController {
 
 	}
 
-	
-	
-
 	@GetMapping("/messagesM/{senderId}/{receiverId}")
 	public ResponseEntity<List<ChatMessage>> findChatMessagesM(@PathVariable String senderId,
 			@PathVariable String receiverId) {
 
 		return ResponseEntity.ok(chatMessageServiceImpl.findChatMessages(senderId, receiverId));
 	}
+
+	@DeleteMapping("/messages/{timestamp}")
+	public ResponseEntity<?> deleteChatMessageByTimestamp(@PathVariable long timestamp) { // Sửa đổi tham số để là timestamp
+	    // Kiểm tra và xóa tin nhắn dựa trên timestamp
+		messagingTemplate.convertAndSend("/topic/deleteMessage", "{\"timestamp\":" + timestamp + "}");
+	    boolean messageDeleted = chatMessageServiceImpl.deleteChatMessageByTimestamp(timestamp);
+	    if (messageDeleted) {
+	        return ResponseEntity.ok().build();
+	    } else {
+	        return ResponseEntity.notFound().build();
+	    }
+	}
+
 }

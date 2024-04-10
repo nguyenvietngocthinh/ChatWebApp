@@ -31,4 +31,5 @@ public class ChatMessage {
     private String receiverId;
     private String content;
     private Date timestamp;
+    
 }
