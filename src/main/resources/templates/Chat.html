@@ -421,7 +421,7 @@
 					$(".fixed-bottom-input input").val("");
 				}
 
-				// Gửi file nếu có
+				// Gửi hinh anh nếu có
 				var formDataFile = new FormData();
 				var fileInput = $("#fileImage")[0].files[0];
 				if (fileInput) {
@@ -436,6 +436,9 @@
 						success: function (response) {
 							// Thực hiện các hành động cần thiết khi upload file thành công
 							console.log("File đã được tải lên:", response);
+
+							var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
+							$("input[name='timestamp']").val(timestamp)
 							var chatMessage = {
 								senderId: loggedInUserPhoneNumber,
 								receiverId: chatFriendUserPhoneNumber,
@@ -446,7 +449,7 @@
 							// Gửi tin nhắn lên server thông qua WebSocket
 							stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
 							console.log("Tin nhắn đã được gửi:", chatMessage);
-							
+
 							// Hiển thị tin nhắn ngay sau khi gửi
 							showMessage(chatMessage);
 

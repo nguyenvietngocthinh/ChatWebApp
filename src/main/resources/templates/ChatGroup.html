@@ -414,14 +414,14 @@
 				formData.append("fileImage", imageFile);
 				// Gửi hình ảnh lên server thông qua AJAX
 				$.ajax({
-					url: "/imagesSend/save", // Địa chỉ URL của endpoint để lưu hình ảnh
+					url: "/api/file/upload", // Địa chỉ URL của endpoint để lưu hình ảnh
 					type: "POST",
 					data: formData,
 					contentType: false,
 					processData: false,
 					success: function (response) {
 						//Gui tin nhan hinh anh
-						messageContent = "Image: " + imageFile.name;
+						console.log("File đã được tải lên:", response);
 						var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
 						$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
 
@@ -429,7 +429,7 @@
 						var chatMessage = {
 							senderId: loggedInUserPhoneNumber,
 							chatId: chatId,
-							content: messageContent,
+							content: response,
 							timestamp: timestamp // Thêm timestamp vào tin nhắn
 						};
 
@@ -512,12 +512,12 @@
 			var messageClass = message.senderId === $("input[name='loggedInUserPhoneNumber']").val() ? "mine" : "other";
 
 
-			if (message.content.startsWith("Image: ")) {
-				var imageSrc = message.content.substring(7); // Lấy đường dẫn của hình ảnh từ tin nhắn
+			if (message.content.startsWith("File uploaded : ")) {
+				var imageSrc = message.content.substring(16); // Lấy đường dẫn của hình ảnh từ tin nhắn
 				var messageElement = '<div class="chat-message ' + messageClass + '">' +
 					'<span class="sender">' + message.senderId + '</span>' +
 					'<div class="content">' +
-					'<img src="./images-send/' + imageSrc + '"class="message-image">' +
+					'<img src="https://congnghemoibucket.s3.ap-southeast-1.amazonaws.com/' + imageSrc + '"class="message-image">' +
 					'</div>' +
 					'<button class="delete-button"><i class="fas fa-trash-alt delete-icon"></i></button>' +
 					'</div>';
