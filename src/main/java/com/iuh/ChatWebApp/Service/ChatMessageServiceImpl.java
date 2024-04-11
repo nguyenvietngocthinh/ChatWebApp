@@ -27,11 +27,28 @@ public class ChatMessageServiceImpl {
         repository.save(chatMessage);
         return chatMessage;
     }
+    
+    public ChatMessage saveGroup(ChatMessage chatMessage) {
+        var chatIdOptional = chatRoomServiceImpl.getChatGroupRoomId(chatMessage.getChatId(), chatMessage.getSenderId());
+        if (chatIdOptional.isPresent()) {
+            var chatId = chatIdOptional.get();
+            chatMessage.setChatId(chatId);
+            repository.save(chatMessage);
+            return chatMessage;
+        } else {
+            // Xử lý khi không tìm thấy chatId
+            throw new RuntimeException("ChatId not found"); // Hoặc bạn có thể tạo một Exception riêng phù hợp
+        }
+    }
+
 
     public List<ChatMessage> findChatMessages(String senderId, String receiverId) {
         var chatId = chatRoomServiceImpl.getChatRoomId(senderId, receiverId);
         return chatId.map(repository::findByChatId).orElse(new ArrayList<>());
     }
     
-   
+    public List<ChatMessage> findChatGroupMessages(String groupName, String senderId) {
+        var chatId = chatRoomServiceImpl.getChatGroupRoomId(groupName, senderId);
+        return chatId.map(repository::findByChatId).orElse(new ArrayList<>());
+    }
 }

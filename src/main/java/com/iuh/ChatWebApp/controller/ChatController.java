@@ -94,6 +94,14 @@ public class ChatController {
 				savedMsg.getId(), savedMsg.getSenderId(), savedMsg.getReceiverId(), savedMsg.getContent()));
 
 	}
+	
+	@MessageMapping("/chatGroup")
+	public void processMessageGroup(@Payload ChatMessage chatMessage) {
+		ChatMessage savedMsg = chatMessageServiceImpl.saveGroup(chatMessage);
+
+		messagingTemplate.convertAndSend("/topic/public", chatMessage);
+
+	}
 
 	@PostMapping("/createGroupChat")
 	@ResponseBody

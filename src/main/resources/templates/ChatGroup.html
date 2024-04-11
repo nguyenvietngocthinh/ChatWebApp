@@ -220,14 +220,17 @@
 				<div class="d-flex align-items-center py-1">
 					<!-- Avatar -->
 					<div class="position-relative">
-						<img class="rounded-circle mr-1" src="https://congnghemoibucket.s3.ap-southeast-1.amazonaws.com/group.png" width="40"
+						<img class="rounded-circle mr-1"
+							src="https://congnghemoibucket.s3.ap-southeast-1.amazonaws.com/group.png" width="40"
 							height="40">
 					</div>
 					<!-- Thông tin người dùng -->
 					<div class="flex-grow-1 pl-3" style="display: flex; flex-direction: column;">
-						<strong id="friend" th:text="${chatRoomGroup.chatId.substring(6)}"></strong>
+						<strong id="chatGroupName" th:text="${chatRoomGroup.chatId.substring(6)}"></strong>
+						<input type="hidden" name="loggedInUserPhoneNumber" th:value="${loggedInUser.phoneNumber}">
+						<input type="hidden" name="timestamp">
 					</div>
-					
+
 					<!-- Nút điện thoại -->
 					<div class="Button" style="margin-left: 710px;">
 						<button class="btn btn-primary btn-lg mr-1 px-3"><svg xmlns="http://www.w3.org/2000/svg"
@@ -335,7 +338,8 @@
 			</div>
 			<input type="text" id="input-field" class="form-control mx-2" placeholder="Type your message">
 			<div class="input-group-append">
-				<button class="btn btn-primary" type="button">Send</button>
+				<button class="btn btn-primary" type="button" onclick="sendMessage()">Send</button>
+
 			</div>
 		</div>
 	</div>
@@ -351,384 +355,44 @@
 
 	<!-- Trong JavaScript -->
 	<script type="text/javascript">
+		var stompClient = null;
 
-		///Canh chinh de luot len xuong
-		$(window).on('resize', function () {
-			var chatHistoryHeight = $(window).height() - $('.chat-header').outerHeight() - $('.fixed-bottom-input').outerHeight();
-			$('.chat-history').css('height', chatHistoryHeight + 'px');
-		});
-		/////
-		$(document).ready(function () {
-			// Gọi hàm connect() khi trang đã tải hoàn toàn
-			connect();
-
-			// Gọi hàm truy xuất lịch sử tin nhắn khi trang được tải hoàn toàn
-			$(document).ready(function () {
-				var senderId = $("input[name='loggedInUserPhoneNumber']").val();
-				var receiverId = $("input[name='chatFriendUser']").val();
-				fetchMessageHistory(senderId, receiverId);
-
-			});
-
-
-			// Bắt sự kiện khi nút "Send" được nhấn
-			$(".btn-primary").click(function () {
-				// Kiểm tra xem stompClient đã được định nghĩa chưa
-				if (typeof stompClient !== "undefined") {
-					// Thực hiện các hành động cần thiết với stompClient ở đây
-				} else {
-					console.error("stompClient is not defined. Please make sure to call connect() first.");
-				}
-			});
-
-			// Lắng nghe sự kiện khi nút "Send" được nhấn
-			$(".fixed-bottom-input .btn-primary").click(function () {
-				// Lấy nội dung tin nhắn từ ô input
-				var messageContent = $("#input-field").val().trim();
-
-				var loggedInUserPhoneNumber = $("input[name='loggedInUserPhoneNumber']").val();
-				var chatFriendUserPhoneNumber = $("input[name='chatFriendUser']").val();
-
-				if (messageContent !== "") {
-					var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
-					$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
-
-					// Tạo đối tượng tin nhắn để gửi lên server
-					var chatMessage = {
-						senderId: loggedInUserPhoneNumber,
-						receiverId: chatFriendUserPhoneNumber,
-						content: messageContent,
-						timestamp: timestamp // Thêm timestamp vào tin nhắn
-					};
-
-					// Gửi tin nhắn lên server thông qua WebSocket
-					stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
-					console.log("Tin nhắn đã được gửi:", chatMessage);
-
-					// Hiển thị tin nhắn ngay sau khi gửi
-					showMessage(chatMessage);
-
-					// Xóa nội dung tin nhắn khỏi ô input sau khi gửi
-					$(".fixed-bottom-input input").val("");
-				}
-
-				// Gửi hình ảnh nếu có
-				var formData = new FormData();
-				var imageFile = $("#fileImage")[0].files[0];
-				if (imageFile) {
-					//luu hinh anh vao database
-					formData.append("fileImage", imageFile);
-					// Gửi hình ảnh lên server thông qua AJAX
-					$.ajax({
-						url: "/imagesSend/save", // Địa chỉ URL của endpoint để lưu hình ảnh
-						type: "POST",
-						data: formData,
-						contentType: false,
-						processData: false,
-						success: function (response) {
-							//Gui tin nhan hinh anh
-							messageContent = "Image: " + imageFile.name;
-							var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
-							$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
-
-							// Tạo đối tượng tin nhắn để gửi lên server
-							var chatMessage = {
-								senderId: loggedInUserPhoneNumber,
-								receiverId: chatFriendUserPhoneNumber,
-								content: messageContent,
-								timestamp: timestamp // Thêm timestamp vào tin nhắn
-							};
-
-							// Gửi tin nhắn lên server thông qua WebSocket
-							stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
-							console.log("Tin nhắn đã được gửi:", chatMessage);
-
-							// Hiển thị tin nhắn ngay sau khi gửi
-							showMessage(chatMessage);
-							$("#fileImage").val('');
-							// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
-							$('#thumbnail').attr('src', '');
-							// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
-							$(".imageChoose").css("height", "0");
-						},
-						error: function (error) {
-							console.error("Error sending image:", error);
-						}
-					});
-				}
-
-				// Gửi file nếu có
-				var formDataFile = new FormData();
-				var fileInput = $("#fileInput")[0].files[0];
-				if (fileInput) {
-					formDataFile.append("document", fileInput);
-					// Gửi file lên server thông qua AJAX
-					$.ajax({
-						url: "/fileSend/save", // Địa chỉ URL của endpoint để lưu file
-						type: "POST",
-						data: formDataFile,
-						contentType: false,
-						processData: false,
-						success: function (response) {
-							var fileId = response.fileId;
-							messageContent = "File: " + fileId + "/" + fileInput.name;
-							var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
-							$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
-
-							// Tạo đối tượng tin nhắn để gửi lên server
-							var chatMessage = {
-								senderId: loggedInUserPhoneNumber,
-								receiverId: chatFriendUserPhoneNumber,
-								content: messageContent,
-								timestamp: timestamp // Thêm timestamp vào tin nhắn
-							};
-
-							// Gửi tin nhắn lên server thông qua WebSocket
-							stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
-							console.log("Tin nhắn đã được gửi:", chatMessage);
-							var fileId = response.fileId; // Lấy fileId từ response
-							console.log("File đã được lưu với ID:", fileId);
-
-							// Hiển thị tin nhắn ngay sau khi gửi
-							showMessage(chatMessage);
-							// Thực hiện các hành động cần thiết sau khi gửi file thành công
-							$("#fileInput").val('');
-
-							// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
-							$(".fileChoose").css("height", "0");
-						},
-						error: function (error) {
-							console.error("Lỗi khi gửi và lưu file:", error);
-							// Thực hiện các hành động cần thiết khi gửi file gặp lỗi
-						}
-					});
-				}
-
-
-			});
-
-
-			////Image
-			$("#fileImage").change(function () {
-
-				// Hiển thị khu vực imageChoose
-				$(".imageChoose").css("height", "auto");
-
-				// Hiển thị hình ảnh được chọn
-				showImageThumbnail(this);
-			});
-			////file
-			$("#fileInput").change(function () {
-
-				// Hiển thị khu vực imageChoose
-				$(".fileChoose").css("height", "auto");
-
-				// Lấy tên của file từ đối tượng input
-				var fileName = $(this).val().split('\\').pop(); // Lấy phần cuối cùng của đường dẫn là tên file
-
-				// Hiển thị tên file
-				$("#fileChosenName").text(fileName);
-
-			});
-
-
-		});
-
-		//Ham connect socket
 		function connect() {
 			var socket = new SockJS('/ws');
 			stompClient = Stomp.over(socket);
-
-			// Sự kiện khi kết nối WebSocket được mở thành công
 			stompClient.connect({}, function (frame) {
-				console.log('Connected:');
-				console.log(frame); // Hiển thị thông tin frame
-				console.log('WebSocket connection opened successfully.');
-
-
-
-				var receiverId = $("input[name='loggedInUserPhoneNumber']").val();
-
-				stompClient.subscribe('/user/' + receiverId + '/queue/messages', function (message) {
-					// Hiển thị tin nhắn mới trong message-container
+				console.log('Connected: ' + frame);
+				stompClient.subscribe('/topic/public', function (message) {
 					showMessage(JSON.parse(message.body));
 				});
-				
-			}, function (error) {
-				// Sự kiện khi có lỗi xảy ra khi kết nối WebSocket
-				console.error('WebSocket error: ' + error);
 			});
 		}
 
+		function sendMessage() {
+			var messageContent = document.getElementById("input-field").value;
+			var chatId = document.getElementById("chatGroupName").innerText;
+			var loggedInUserPhoneNumber = $("input[name='loggedInUserPhoneNumber']").val();
 
-		// Hàm được gọi khi kết nối WebSocket được mở thành công
-		function onConnected() {
-			console.log('WebSocket connection opened successfully.');
-
-		}
-
-		// Hàm được gọi khi kết nối WebSocket bị đóng
-		function onDisconnected() {
-			console.log('WebSocket connection closed.');
-		}
-
-
-		// Hien thi showMessages
-		var displayedMessages = [];
-		function showMessage(message) {
-			// Kiểm tra xem tin nhắn có tồn tại trong mảng displayedMessages hay không
-			if (displayedMessages.includes(message.timestamp)) {
-				// Nếu đã tồn tại, bỏ qua việc hiển thị tin nhắn
-				return;
-			}
-
-			// Nếu chưa tồn tại, thêm timestamp vào mảng displayedMessages và hiển thị tin nhắn
-			displayedMessages.push(message.timestamp);
-			appendNewMessageToUI(message);
-		}
-
-		// hien thi hinh anh duoc chon
-		function showImageThumbnail(fileInput) {
-			file = fileInput.files[0];
-			reader = new FileReader();
-
-			reader.onload = function (e) {
-				$('#thumbnail').attr('src', e.target.result);
+			var chatMessage = {
+				content: messageContent,
+				chatId: chatId,
+				senderId: loggedInUserPhoneNumber,
 			};
 
-			reader.readAsDataURL(file);
-		}
-
-		// xoa hinh anh di o thumbail
-		function deleteImage() {
-			$("#fileImage").val('');
-			// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
-			$('#thumbnail').attr('src', '');
-			// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
-			$(".imageChoose").css("height", "0");
-		}
-
-		// xoa hinh anh di o thumbail
-		function deleteFile() {
-			$("#fileInput").val('');
-
-			// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
-			$(".fileChoose").css("height", "0");
+			stompClient.send("/app/chatGroup", {}, JSON.stringify(chatMessage));
+			document.getElementById("input-field").value = "";
 		}
 
 
-		// Hàm để truy xuất lịch sử tin nhắn từ máy chủ
-		function fetchMessageHistory(senderId, receiverId) {
-			$.get("/messages/" + senderId + "/" + receiverId, function (data) {
-				data.forEach(function (message) {
-					// Hiển thị tin nhắn trong message-container
-					appendNewMessageToUI(message);
-				});
-			});
+		function showMessage(message) {
+			var messageContainer = document.getElementById('message-container');
+			var messageElement = document.createElement('div');
+			messageElement.classList.add('chat-message');
+			messageElement.innerHTML = '<span class="sender">' + message.senderId + '</span><p class="content">' + message.content + '</p>';
+			messageContainer.appendChild(messageElement);
 		}
 
-		// Cach hien thi tin nhan moi
-		function appendNewMessageToUI(message) {
-			var timestamp = message.timestamp;
-			var chatContainer = $("#message-container");
-			var messageClass = message.senderId === $("input[name='loggedInUserPhoneNumber']").val() ? "mine" : "other";
-
-			var deleteIcon = '<i class="fas fa-trash-alt delete-icon"></i>';
-
-			// Kiểm tra nếu tin nhắn chứa hình ảnh
-			if (message.content.startsWith("Image: ")) {
-				var imageSrc = message.content.substring(7); // Lấy đường dẫn của hình ảnh từ tin nhắn
-				var messageDiv = '<div class="chat-message ' + messageClass + '">' +
-					'<div class="content">' +
-					'<img src="./images-send/' + imageSrc + '"class="message-image" data-timestamp="' + timestamp + '">' +
-					'</div>' +
-					'<button class="delete-button"><i class="fas fa-trash-alt delete-icon"></i></button>' +
-					'</div>';
-			} else if (message.content.startsWith("File: ")) {
-				// Nếu tin nhắn bắt đầu từ "File:", tạo một thẻ <a> chứa nội dung của tin nhắn
-				var fileMessage = message.content.substring(6); // Lấy tên file từ tin nhắn
-
-				var fileId = fileMessage.split("/")[0]; // Lấy phần fileId
-				var fileName = fileMessage.split("/")[1]; // Lấy phần fileName
-
-				// Tạo URL tải xuống với fileId
-				var downloadUrl = "/download?id=" + fileId;
-
-
-
-				// Xác định màu sắc của tin nhắn dựa trên loại là của bạn (mine) hay của người khác (other)
-				var messageColorClass = messageClass === "mine" ? "text-white" : "text-dark";
-
-				var fileLink = '<a href="' + downloadUrl + '" class="' + messageColorClass + '">' + fileName + '</a>';
-
-				var messageDiv = '<div class="chat-message ' + messageClass + '" data-timestamp="' + timestamp + '">' +
-					'<div class="content">' + fileLink + '</div>' +
-					'<button class="delete-button"><i class="fas fa-trash-alt delete-icon"></i></button>' +
-					'</div>';
-			} else {
-				// Tin nhắn không chứa hình ảnh
-				var messageDiv = '<div class="chat-message ' + messageClass + '" data-timestamp="' + timestamp + '">' +
-					'<div class="content">' + message.content + '</div>' +
-					'<button class="delete-button" ><i class="fas fa-trash-alt delete-icon"></i></button>' +
-					'</div>';
-				console.log(message.id);
-			}
-
-			chatContainer.append(messageDiv);
-			chatContainer.scrollTop(chatContainer[0].scrollHeight);
-		}
-
-		$(document).on('click', '.delete-button', function () {
-			// Trích xuất timestamp từ thuộc tính data-timestamp của tin nhắn
-			var timestampString = $(this).closest('.chat-message').data('timestamp');
-			// Chuyển đổi timestamp từ chuỗi sang số (long)
-			var timestamp = Date.parse(timestampString);
-			// Gọi hàm handleDeleteMessage với timestamp đã trích xuất
-			handleDeleteMessage(timestamp);
-		});
-		function handleDeleteMessage(timestamp) {
-			// Hiển thị hộp thoại xác nhận trước khi xóa
-			if (confirm("Bạn có chắc chắn muốn xóa tin nhắn này không?")) {
-				fetch('api/chat/messages/' + timestamp, {
-					method: 'DELETE',
-				})
-					.then(response => {
-						if (response.ok) {
-							// Xóa tin nhắn khỏi giao diện người dùng nếu xóa thành công trên máy chủ
-							var messageElement = document.querySelector('[data-timestamp="' + timestamp + '"]');
-							if (messageElement) {
-								messageElement.remove();
-							}
-						}
-					})
-					.catch(error => {
-						console.error('Error deleting message:', error);
-					});
-			} else {
-				// Nếu người dùng không xác nhận xóa, không thực hiện gì cả
-				console.log('Xóa tin nhắn đã bị hủy.');
-			}
-		}
-
-
-
-		////emoji
-		click = false
-		function show_emoji() {
-			if (click == false) {
-				document.getElementsByClassName("emoji")[0].style.height = "142px";
-				document.getElementsByClassName("emoji")[0].style.height = "8px 0px";
-				click = true;
-			} else {
-				document.getElementsByClassName("emoji")[0].style.height = "0px";
-				document.getElementsByClassName("emoji")[0].style.height = "0px";
-				click = false;
-			}
-		}
-		function emoji(emoji) {
-			document.getElementById("input-field").value += document.getElementById(emoji).innerHTML;
-		}
-
+		connect();
 
 	</script>
 
