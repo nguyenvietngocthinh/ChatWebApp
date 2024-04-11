@@ -228,6 +228,7 @@
 					<div class="flex-grow-1 pl-3" style="display: flex; flex-direction: column;">
 						<strong id="chatGroupName" th:text="${chatRoomGroup.chatId.substring(6)}"></strong>
 						<input type="hidden" name="loggedInUserPhoneNumber" th:value="${loggedInUser.phoneNumber}">
+						<input type="hidden" name="loggedInUserName" th:value="${loggedInUser.fullName}">
 						<input type="hidden" name="timestamp">
 					</div>
 
@@ -355,14 +356,27 @@
 
 	<!-- Trong JavaScript -->
 	<script type="text/javascript">
+		///Canh chinh de luot len xuong
+		$(window).on('resize', function () {
+			var chatHistoryHeight = $(window).height() - $('.chat-header').outerHeight() - $('.fixed-bottom-input').outerHeight();
+			$('.chat-history').css('height', chatHistoryHeight + 'px');
+		});
 		var stompClient = null;
 
 		function connect() {
 			var socket = new SockJS('/ws');
 			stompClient = Stomp.over(socket);
 			stompClient.connect({}, function (frame) {
+
 				console.log('Connected: ' + frame);
-				stompClient.subscribe('/topic/public', function (message) {
+				var chatId = document.getElementById("chatGroupName").innerText;
+				var loggedInUserPhoneNumber = $("input[name='loggedInUserPhoneNumber']").val();
+				fetchChatHistory(chatId, loggedInUserPhoneNumber);
+				// Đổi kênh nhận tin nhắn thành kênh tương ứng với từng nhóm
+				var chatId = "Group_" + document.getElementById("chatGroupName").innerText;
+				var groupChannel = "/topic/group/" + chatId;
+
+				stompClient.subscribe(groupChannel, function (message) {
 					showMessage(JSON.parse(message.body));
 				});
 			});
@@ -373,23 +387,253 @@
 			var chatId = document.getElementById("chatGroupName").innerText;
 			var loggedInUserPhoneNumber = $("input[name='loggedInUserPhoneNumber']").val();
 
-			var chatMessage = {
-				content: messageContent,
-				chatId: chatId,
-				senderId: loggedInUserPhoneNumber,
-			};
+			if (messageContent !== "") {
+				var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
+				$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
 
-			stompClient.send("/app/chatGroup", {}, JSON.stringify(chatMessage));
-			document.getElementById("input-field").value = "";
+				// Tạo đối tượng tin nhắn để gửi lên server
+				var chatMessage = {
+					content: messageContent,
+					chatId: chatId,
+					senderId: loggedInUserPhoneNumber,
+					timestamp: timestamp
+				};
+
+				// Gửi tin nhắn lên server thông qua WebSocket
+				stompClient.send("/app/chatGroup", {}, JSON.stringify(chatMessage));
+				console.log("Tin nhắn đã được gửi:", chatMessage);
+
+				document.getElementById("input-field").value = "";
+			}
+
+			// Gửi hình ảnh nếu có
+			var formData = new FormData();
+			var imageFile = $("#fileImage")[0].files[0];
+			if (imageFile) {
+				//luu hinh anh vao database
+				formData.append("fileImage", imageFile);
+				// Gửi hình ảnh lên server thông qua AJAX
+				$.ajax({
+					url: "/imagesSend/save", // Địa chỉ URL của endpoint để lưu hình ảnh
+					type: "POST",
+					data: formData,
+					contentType: false,
+					processData: false,
+					success: function (response) {
+						//Gui tin nhan hinh anh
+						messageContent = "Image: " + imageFile.name;
+						var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
+						$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
+
+						// Tạo đối tượng tin nhắn để gửi lên server
+						var chatMessage = {
+							senderId: loggedInUserPhoneNumber,
+							chatId: chatId,
+							content: messageContent,
+							timestamp: timestamp // Thêm timestamp vào tin nhắn
+						};
+
+						// Gửi tin nhắn lên server thông qua WebSocket
+						stompClient.send("/app/chatGroup", {}, JSON.stringify(chatMessage));
+						console.log("Tin nhắn đã được gửi:", chatMessage);
+
+						// Hiển thị tin nhắn ngay sau khi gửi
+						showMessage(chatMessage);
+						$("#fileImage").val('');
+						// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
+						$('#thumbnail').attr('src', '');
+						// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
+						$(".imageChoose").css("height", "0");
+					},
+					error: function (error) {
+						console.error("Error sending image:", error);
+					}
+				});
+			}
+			
+			// Gửi file nếu có
+			var formDataFile = new FormData();
+			var fileInput = $("#fileInput")[0].files[0];
+			if (fileInput) {
+				formDataFile.append("document", fileInput);
+				// Gửi file lên server thông qua AJAX
+				$.ajax({
+					url: "/fileSend/save", // Địa chỉ URL của endpoint để lưu file
+					type: "POST",
+					data: formDataFile,
+					contentType: false,
+					processData: false,
+					success: function (response) {
+						var fileId = response.fileId;
+						messageContent = "File: " + fileId + "/" + fileInput.name;
+						var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
+						$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
+
+						// Tạo đối tượng tin nhắn để gửi lên server
+						var chatMessage = {
+							senderId: loggedInUserPhoneNumber,
+							chatId: chatId,
+							content: messageContent,
+							timestamp: timestamp // Thêm timestamp vào tin nhắn
+						};
+
+						// Gửi tin nhắn lên server thông qua WebSocket
+						stompClient.send("/app/chatGroup", {}, JSON.stringify(chatMessage));
+						console.log("Tin nhắn đã được gửi:", chatMessage);
+						var fileId = response.fileId; // Lấy fileId từ response
+						console.log("File đã được lưu với ID:", fileId);
+
+						// Hiển thị tin nhắn ngay sau khi gửi
+						showMessage(chatMessage);
+						// Thực hiện các hành động cần thiết sau khi gửi file thành công
+						$("#fileInput").val('');
+
+						// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
+						$(".fileChoose").css("height", "0");
+					},
+					error: function (error) {
+						console.error("Lỗi khi gửi và lưu file:", error);
+						// Thực hiện các hành động cần thiết khi gửi file gặp lỗi
+					}
+				});
+			}
+
 		}
 
 
-		function showMessage(message) {
+		function scrollToBottom() {
 			var messageContainer = document.getElementById('message-container');
+			messageContainer.scrollTop = messageContainer.scrollHeight;
+		}
+
+		function showMessage(message) {
+			var messageContainer = $("#message-container");
 			var messageElement = document.createElement('div');
-			messageElement.classList.add('chat-message');
-			messageElement.innerHTML = '<span class="sender">' + message.senderId + '</span><p class="content">' + message.content + '</p>';
-			messageContainer.appendChild(messageElement);
+			var messageClass = message.senderId === $("input[name='loggedInUserPhoneNumber']").val() ? "mine" : "other";
+
+
+			if (message.content.startsWith("Image: ")) {
+				var imageSrc = message.content.substring(7); // Lấy đường dẫn của hình ảnh từ tin nhắn
+				var messageElement = '<div class="chat-message ' + messageClass + '">' +
+					'<span class="sender">' + message.senderId + '</span>' +
+					'<div class="content">' +
+					'<img src="./images-send/' + imageSrc + '"class="message-image">' +
+					'</div>' +
+					'<button class="delete-button"><i class="fas fa-trash-alt delete-icon"></i></button>' +
+					'</div>';
+			} else if (message.content.startsWith("File: ")) {
+				// Nếu tin nhắn bắt đầu từ "File:", tạo một thẻ <a> chứa nội dung của tin nhắn
+				var fileMessage = message.content.substring(6); // Lấy tên file từ tin nhắn
+
+				var fileId = fileMessage.split("/")[0]; // Lấy phần fileId
+				var fileName = fileMessage.split("/")[1]; // Lấy phần fileName
+
+				// Tạo URL tải xuống với fileId
+				var downloadUrl = "/download?id=" + fileId;
+
+
+
+				// Xác định màu sắc của tin nhắn dựa trên loại là của bạn (mine) hay của người khác (other)
+				var messageColorClass = messageClass === "mine" ? "text-white" : "text-dark";
+
+				var fileLink = '<a href="' + downloadUrl + '" class="' + messageColorClass + '">' + fileName + '</a>';
+
+				var messageElement = '<div class="chat-message ' + messageClass + '">' +
+					'<span class="sender">' + message.senderId + '</span>' +
+					'<div class="content">' + fileLink + '</div>' +
+					'<button class="delete-button"><i class="fas fa-trash-alt delete-icon"></i></button>' +
+					'</div>';
+			} else {
+				var messageElement = '<div class="chat-message ' + messageClass + '">' +
+					'<span class="sender">' + message.senderId + '</span><p class="content">' + message.content + '</p>' +
+					'<button class="delete-button" ><i class="fas fa-trash-alt delete-icon"></i></button>' +
+					'</div>';
+			}
+
+
+
+			messageContainer.append(messageElement);
+			scrollToBottom(); // Cuộn xuống cuối của khung chat
+		}
+
+
+
+		function fetchChatHistory(chatId, senderId) {
+			$.get("/messagesGroup/" + chatId + "/" + senderId, function (data) {
+				data.forEach(function (message) {
+					// Hiển thị tin nhắn trong message-container
+					showMessage(message);
+				});
+			});
+		}
+
+		////Image
+		$("#fileImage").change(function () {
+
+			// Hiển thị khu vực imageChoose
+			$(".imageChoose").css("height", "auto");
+
+			// Hiển thị hình ảnh được chọn
+			showImageThumbnail(this);
+		});
+		////file
+		$("#fileInput").change(function () {
+
+			// Hiển thị khu vực imageChoose
+			$(".fileChoose").css("height", "auto");
+
+			// Lấy tên của file từ đối tượng input
+			var fileName = $(this).val().split('\\').pop(); // Lấy phần cuối cùng của đường dẫn là tên file
+
+			// Hiển thị tên file
+			$("#fileChosenName").text(fileName);
+
+		});
+
+		// hien thi hinh anh duoc chon
+		function showImageThumbnail(fileInput) {
+			file = fileInput.files[0];
+			reader = new FileReader();
+
+			reader.onload = function (e) {
+				$('#thumbnail').attr('src', e.target.result);
+			};
+
+			reader.readAsDataURL(file);
+		}
+
+		// xoa hinh anh di o thumbail
+		function deleteImage() {
+			$("#fileImage").val('');
+			// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
+			$('#thumbnail').attr('src', '');
+			// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
+			$(".imageChoose").css("height", "0");
+		}
+
+		// xoa hinh anh di o thumbail
+		function deleteFile() {
+			$("#fileInput").val('');
+
+			// Đặt chiều cao của imageChoose về 0 để ẩn hình ảnh và nút xóa
+			$(".fileChoose").css("height", "0");
+		}
+
+		////emoji
+		click = false
+		function show_emoji() {
+			if (click == false) {
+				document.getElementsByClassName("emoji")[0].style.height = "142px";
+				document.getElementsByClassName("emoji")[0].style.height = "8px 0px";
+				click = true;
+			} else {
+				document.getElementsByClassName("emoji")[0].style.height = "0px";
+				document.getElementsByClassName("emoji")[0].style.height = "0px";
+				click = false;
+			}
+		}
+		function emoji(emoji) {
+			document.getElementById("input-field").value += document.getElementById(emoji).innerHTML;
 		}
 
 		connect();

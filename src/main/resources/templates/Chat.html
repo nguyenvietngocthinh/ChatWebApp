@@ -421,39 +421,35 @@
 					$(".fixed-bottom-input input").val("");
 				}
 
-				// Gửi hình ảnh nếu có
-				var formData = new FormData();
-				var imageFile = $("#fileImage")[0].files[0];
-				if (imageFile) {
-					//luu hinh anh vao database
-					formData.append("fileImage", imageFile);
-					// Gửi hình ảnh lên server thông qua AJAX
+				// Gửi file nếu có
+				var formDataFile = new FormData();
+				var fileInput = $("#fileImage")[0].files[0];
+				if (fileInput) {
+					formDataFile.append("fileImage", fileInput);
+					// Gửi file lên server thông qua AJAX
 					$.ajax({
-						url: "/imagesSend/save", // Địa chỉ URL của endpoint để lưu hình ảnh
+						url: "/api/file/upload", // Địa chỉ URL của API upload file
 						type: "POST",
-						data: formData,
+						data: formDataFile,
 						contentType: false,
 						processData: false,
 						success: function (response) {
-							//Gui tin nhan hinh anh
-							messageContent = "Image: " + imageFile.name;
-							var timestamp = new Date().toISOString(); // Lấy thời gian hiện tại và chuyển đổi sang định dạng ISO
-							$("input[name='timestamp']").val(timestamp); // Cập nhật giá trị của hidden input
-
-							// Tạo đối tượng tin nhắn để gửi lên server
+							// Thực hiện các hành động cần thiết khi upload file thành công
+							console.log("File đã được tải lên:", response);
 							var chatMessage = {
 								senderId: loggedInUserPhoneNumber,
 								receiverId: chatFriendUserPhoneNumber,
-								content: messageContent,
+								content: response,
 								timestamp: timestamp // Thêm timestamp vào tin nhắn
 							};
 
 							// Gửi tin nhắn lên server thông qua WebSocket
 							stompClient.send("/app/chat", {}, JSON.stringify(chatMessage));
 							console.log("Tin nhắn đã được gửi:", chatMessage);
-
+							
 							// Hiển thị tin nhắn ngay sau khi gửi
 							showMessage(chatMessage);
+
 							$("#fileImage").val('');
 							// Xóa hình ảnh hiện tại bằng cách đặt giá trị của src là rỗng
 							$('#thumbnail').attr('src', '');
@@ -461,10 +457,13 @@
 							$(".imageChoose").css("height", "0");
 						},
 						error: function (error) {
-							console.error("Error sending image:", error);
+							console.error("Lỗi khi tải lên file:", error);
+							// Thực hiện các hành động cần thiết khi upload file gặp lỗi
 						}
 					});
 				}
+
+
 
 				// Gửi file nếu có
 				var formDataFile = new FormData();
@@ -562,7 +561,7 @@
 					// Hiển thị tin nhắn mới trong message-container
 					showMessage(JSON.parse(message.body));
 				});
-				
+
 			}, function (error) {
 				// Sự kiện khi có lỗi xảy ra khi kết nối WebSocket
 				console.error('WebSocket error: ' + error);
@@ -645,11 +644,11 @@
 			var deleteIcon = '<i class="fas fa-trash-alt delete-icon"></i>';
 
 			// Kiểm tra nếu tin nhắn chứa hình ảnh
-			if (message.content.startsWith("Image: ")) {
-				var imageSrc = message.content.substring(7); // Lấy đường dẫn của hình ảnh từ tin nhắn
+			if (message.content.startsWith("File uploaded : ")) {
+				var imageSrc = message.content.substring(16); // Lấy đường dẫn của hình ảnh từ tin nhắn
 				var messageDiv = '<div class="chat-message ' + messageClass + '">' +
 					'<div class="content">' +
-					'<img src="./images-send/' + imageSrc + '"class="message-image" data-timestamp="' + timestamp + '">' +
+					'<img src="https://congnghemoibucket.s3.ap-southeast-1.amazonaws.com/' + imageSrc + '"class="message-image" data-timestamp="' + timestamp + '">' +
 					'</div>' +
 					'<button class="delete-button"><i class="fas fa-trash-alt delete-icon"></i></button>' +
 					'</div>';
@@ -686,39 +685,6 @@
 			chatContainer.append(messageDiv);
 			chatContainer.scrollTop(chatContainer[0].scrollHeight);
 		}
-
-		$(document).on('click', '.delete-button', function () {
-			// Trích xuất timestamp từ thuộc tính data-timestamp của tin nhắn
-			var timestampString = $(this).closest('.chat-message').data('timestamp');
-			// Chuyển đổi timestamp từ chuỗi sang số (long)
-			var timestamp = Date.parse(timestampString);
-			// Gọi hàm handleDeleteMessage với timestamp đã trích xuất
-			handleDeleteMessage(timestamp);
-		});
-		function handleDeleteMessage(timestamp) {
-			// Hiển thị hộp thoại xác nhận trước khi xóa
-			if (confirm("Bạn có chắc chắn muốn xóa tin nhắn này không?")) {
-				fetch('api/chat/messages/' + timestamp, {
-					method: 'DELETE',
-				})
-					.then(response => {
-						if (response.ok) {
-							// Xóa tin nhắn khỏi giao diện người dùng nếu xóa thành công trên máy chủ
-							var messageElement = document.querySelector('[data-timestamp="' + timestamp + '"]');
-							if (messageElement) {
-								messageElement.remove();
-							}
-						}
-					})
-					.catch(error => {
-						console.error('Error deleting message:', error);
-					});
-			} else {
-				// Nếu người dùng không xác nhận xóa, không thực hiện gì cả
-				console.log('Xóa tin nhắn đã bị hủy.');
-			}
-		}
-
 
 
 		////emoji

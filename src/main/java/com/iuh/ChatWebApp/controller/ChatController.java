@@ -98,8 +98,8 @@ public class ChatController {
 	@MessageMapping("/chatGroup")
 	public void processMessageGroup(@Payload ChatMessage chatMessage) {
 		ChatMessage savedMsg = chatMessageServiceImpl.saveGroup(chatMessage);
-
-		messagingTemplate.convertAndSend("/topic/public", chatMessage);
+		String groupChannel = "/topic/group/" + chatMessage.getChatId();
+		messagingTemplate.convertAndSend(groupChannel, chatMessage);
 
 	}
 
@@ -128,6 +128,13 @@ public class ChatController {
 			@PathVariable String receiverId) {
 
 		return ResponseEntity.ok(chatMessageServiceImpl.findChatMessages(senderId, receiverId));
+	}
+	
+	@GetMapping("/messagesGroup/{chatId}/{senderId}")
+	public ResponseEntity<List<ChatMessage>> findChatGroupMessages(@PathVariable String chatId,
+			@PathVariable String senderId) {
+
+		return ResponseEntity.ok(chatMessageServiceImpl.findChatGroupMessages(chatId, senderId));
 	}
 
 }

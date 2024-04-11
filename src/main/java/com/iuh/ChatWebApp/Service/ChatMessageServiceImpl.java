@@ -32,6 +32,7 @@ public class ChatMessageServiceImpl {
         var chatIdOptional = chatRoomServiceImpl.getChatGroupRoomId(chatMessage.getChatId(), chatMessage.getSenderId());
         if (chatIdOptional.isPresent()) {
             var chatId = chatIdOptional.get();
+            System.out.println(chatId);
             chatMessage.setChatId(chatId);
             repository.save(chatMessage);
             return chatMessage;
@@ -51,4 +52,6 @@ public class ChatMessageServiceImpl {
         var chatId = chatRoomServiceImpl.getChatGroupRoomId(groupName, senderId);
         return chatId.map(repository::findByChatId).orElse(new ArrayList<>());
     }
+    
+    
 }
