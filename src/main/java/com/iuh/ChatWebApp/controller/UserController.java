@@ -30,6 +30,7 @@ import org.springframework.web.multipart.MultipartFile;
 import com.iuh.ChatWebApp.Service.ChatRoomServiceImpl;
 import com.iuh.ChatWebApp.Service.FriendServiceImpl;
 import com.iuh.ChatWebApp.Service.UserServiceImpl;
+import com.iuh.ChatWebApp.entity.ChatRoom;
 import com.iuh.ChatWebApp.entity.User;
 
 import jakarta.servlet.http.HttpSession;
@@ -97,9 +98,11 @@ public class UserController {
 
 		// Lấy danh sách bạn bè của người dùng đã đăng nhập
 		List<User> friendList = friendService.getFriendListByPhoneNumber(loggedInUser.getPhoneNumber());
+		List<ChatRoom> groupChatList = chatRoomService.getGroupChatRooms(loggedInUser.getPhoneNumber());
 
 		// Đặt danh sách bạn bè vào model để sử dụng trong template
 		model.addAttribute("friendList", friendList);
+		model.addAttribute("groupChatList", groupChatList);
 
 		return "HomePage";
 	}

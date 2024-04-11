@@ -24,6 +24,7 @@ import com.iuh.ChatWebApp.Service.ChatRoomServiceImpl;
 import com.iuh.ChatWebApp.Service.UserServiceImpl;
 import com.iuh.ChatWebApp.entity.ChatMessage;
 import com.iuh.ChatWebApp.entity.ChatNotification;
+import com.iuh.ChatWebApp.entity.ChatRoom;
 import com.iuh.ChatWebApp.entity.User;
 
 import jakarta.servlet.http.HttpSession;
@@ -64,14 +65,7 @@ public class ChatRestController {
 		}
 	}
 
-	@MessageMapping("/chatM")
-	public void processMessageM(@Payload ChatMessage chatMessage) {
-		ChatMessage savedMsg = chatMessageServiceImpl.save(chatMessage);
-
-		messagingTemplate.convertAndSendToUser(chatMessage.getReceiverId(), "/queue/messages", new ChatNotification(
-				savedMsg.getId(), savedMsg.getSenderId(), savedMsg.getReceiverId(), savedMsg.getContent()));
-
-	}
+	
 
 	@GetMapping("/messagesM/{senderId}/{receiverId}")
 	public ResponseEntity<List<ChatMessage>> findChatMessagesM(@PathVariable String senderId,
@@ -79,17 +73,21 @@ public class ChatRestController {
 
 		return ResponseEntity.ok(chatMessageServiceImpl.findChatMessages(senderId, receiverId));
 	}
+	
+	@GetMapping("/getChatGroupRoomM")
+    public ResponseEntity<?> getChatGroupRoomM(@RequestParam("groupChatName") String groupChatName,
+                                              HttpSession session) {
+        User loggedInUser = (User) session.getAttribute("loggedInUser");
+        String loggedInUserPhoneNumber = loggedInUser.getPhoneNumber();
 
-	@DeleteMapping("/messages/{timestamp}")
-	public ResponseEntity<?> deleteChatMessageByTimestamp(@PathVariable long timestamp) { // Sửa đổi tham số để là timestamp
-	    // Kiểm tra và xóa tin nhắn dựa trên timestamp
-		messagingTemplate.convertAndSend("/topic/deleteMessage", "{\"timestamp\":" + timestamp + "}");
-	    boolean messageDeleted = chatMessageServiceImpl.deleteChatMessageByTimestamp(timestamp);
-	    if (messageDeleted) {
-	        return ResponseEntity.ok().build();
-	    } else {
-	        return ResponseEntity.notFound().build();
-	    }
-	}
+        Optional<String> chatGroupRoomId = chatRoomServiceImpl.getChatGroupRoomId(groupChatName, loggedInUserPhoneNumber);
+
+        if (chatGroupRoomId.isPresent()) {
+            ChatRoom chatRoomGroup = chatRoomServiceImpl.findByChatIdAndSenderId("Group_" + groupChatName, loggedInUserPhoneNumber);
+            return ResponseEntity.ok().body(chatRoomGroup);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
 
 }

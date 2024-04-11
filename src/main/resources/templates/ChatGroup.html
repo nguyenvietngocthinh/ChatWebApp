@@ -220,23 +220,14 @@
 				<div class="d-flex align-items-center py-1">
 					<!-- Avatar -->
 					<div class="position-relative">
-						<img class="rounded-circle mr-1" th:src="@{'images/' + ${chatFriendUser.avatar}}" width="40"
+						<img class="rounded-circle mr-1" src="https://congnghemoibucket.s3.ap-southeast-1.amazonaws.com/group.png" width="40"
 							height="40">
 					</div>
 					<!-- Thông tin người dùng -->
 					<div class="flex-grow-1 pl-3" style="display: flex; flex-direction: column;">
-						<strong id="friend" th:text="${chatFriendUser.fullName}"></strong>
-						<input type="hidden" name="chatFriendUser" th:value="${chatFriendUser.phoneNumber}">
-						<input type="hidden" name="loggedInUserPhoneNumber" th:value="${loggedInUser.phoneNumber}">
-						<input type="hidden" name="timestamp">
-
-						<div class="text-muted small">
-							<em class="fas fa-circle"
-								th:class="${chatFriendUser.online} ? 'chat-online' : 'chat-offline'"></em>
-							<em th:text="${chatFriendUser.online} ? 'Online' : 'Offline'"></em>
-						</div>
-
+						<strong id="friend" th:text="${chatRoomGroup.chatId.substring(6)}"></strong>
 					</div>
+					
 					<!-- Nút điện thoại -->
 					<div class="Button" style="margin-left: 710px;">
 						<button class="btn btn-primary btn-lg mr-1 px-3"><svg xmlns="http://www.w3.org/2000/svg"

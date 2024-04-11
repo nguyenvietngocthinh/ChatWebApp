@@ -111,8 +111,9 @@
 		<div class="people-list">
 			<div class="extra-header">
 				<div class="d-flex align-items-center">
-					<a href="#"><img th:src="@{'images/' + ${session.loggedInUser.avatar}}" class="rounded-circle mr-2"
-							alt="Avatar" width="40" height="40"></a>
+					<a href="#"><img
+							th:src="@{'https://congnghemoibucket.s3.ap-southeast-1.amazonaws.com/' + ${session.loggedInUser.avatar}}"
+							class="rounded-circle mr-2" alt="Avatar" width="40" height="40"></a>
 					<div class="flex-grow-1"></div>
 					<div class="d-flex">
 						<button class="btn btn-link" id="addGroupBtn" data-toggle="modal" data-target="#addGroupModal">
@@ -148,7 +149,7 @@
 								<div class="form-group">
 									<label for="groupName">Tên nhóm:</label>
 									<input type="text" class="form-control" id="groupName" name="groupName"
-										placeholder="Nhập tên nhóm">
+										placeholder="Nhập tên nhóm" required>
 								</div>
 								<div class="form-group">
 									<label for="searchFriendsInput">Tìm kiếm bạn bè:</label>
@@ -197,8 +198,8 @@
 					<div th:each="friend : ${friendList}">
 						<a class="list-group-item list-group-item-action border-0">
 							<div class="d-flex align-items-start">
-								<img th:src="@{'images/' + ${friend.avatar}}" class="rounded-circle mr-1" width="40"
-									height="40">
+								<img th:src="@{'https://congnghemoibucket.s3.ap-southeast-1.amazonaws.com/' + ${friend.avatar}}"
+									class="rounded-circle mr-1" width="40" height="40">
 								<div class="flex-grow-1 ml-3">
 									<!-- Các thông tin khác về bạn bè có thể thêm vào đây -->
 									<p id="fullNameFriend" th:text=" ${friend.fullName}"></p>
@@ -229,14 +230,36 @@
 				</div>
 
 				<div class="list-group hidden" id="groupChatList">
-					<!-- Hiển thị danh sách nhóm chat ở đây -->
-					<!-- Sử dụng Thymeleaf để lặp qua danh sách nhóm chat và hiển thị từng nhóm -->
+					<div class="buttonChange">
+						<button class="btn btn-link icon-btn" id="showFriendListBtn2">
+							<i class="material-icons">people</i> <!-- Biểu tượng danh sách bạn bè -->
+						</button>
+						<!-- Thay thế nút "Nhóm chat" bằng biểu tượng -->
+						<button class="btn btn-link icon-btn" id="showGroupChatBtn">
+							<i class="material-icons">chat</i> <!-- Biểu tượng nhóm chat -->
+						</button>
+					</div>
+					<div th:each="groupChat : ${groupChatList}">
+						<a class="list-group-item list-group-item-action border-0">
+							<div class="d-flex align-items-start">
+								<img src="https://congnghemoibucket.s3.ap-southeast-1.amazonaws.com/group.png"
+									class="rounded-circle mr-1" width="40" height="40">
+								<div lass="flex-grow-1 ml-3">
+									<!-- Các thông tin khác về bạn bè có thể thêm vào đây -->
+									<p id="groupChatName" name="groupChatName" th:text="${groupChat.chatId.substring(6)}" </p>
+								</div>
+							</div>
+						</a>
+					</div>
 				</div>
 			</div>
 			<hr class="d-block d-lg-none mt-1 mb-0">
 		</div>
 
 		<div class="chatt hidden">
+		</div>
+		
+		<div class="chatGroup hidden">
 		</div>
 
 
@@ -304,7 +327,8 @@
 										"width": "450px",
 										"margin-bottom": "10px"
 									});
-									var img = $("<img>").attr("src", "images/" + response[i].avatar);
+									var img = $("<img>").attr("src", "https://congnghemoibucket.s3.ap-southeast-1.amazonaws.com/" + response[i].avatar);
+
 									img.css({
 										"width": "40px",
 										"height": "40px",
@@ -416,8 +440,6 @@
 			});
 		});
 
-
-
 		$(document).ready(function () {
 			// Sử dụng sự kiện delegate để xử lý sự kiện click cho các nút được tạo động
 			$(document).on("click", ".btn-success", function () {
@@ -427,6 +449,41 @@
 		});
 
 
+		$(document).ready(function () {
+			// Sử dụng sự kiện delegate để xử lý click cho ảnh trong friendList
+			$(document).on('click', '#groupChatList img', function (e) {
+				e.preventDefault(); // Ngăn chặn hành động mặc định của thẻ <a>
+
+				// Lấy giá trị senderPhoneNumber từ thuộc tính data-senderPhoneNumber của thẻ <a> chứa ảnh
+				var groupChatName = $(this).closest('a').find("[name='groupChatName']").text().trim();
+
+				console.log("Chatname:", groupChatName);
+
+				// Gửi yêu cầu AJAX đến endpoint /getChatRoom
+				$.ajax({
+					url: "/getChatGroupRoom",
+					method: "GET",
+					data: {
+						groupChatName: groupChatName
+					},
+					success: function (response) {
+						$(".welcomeMessage").addClass("hidden");
+						$(".chatt").addClass("hidden");
+						// Chèn nội dung của Chat vào phần tử có class là "chatt"
+						$(".chatGroup").html(response);
+						// Ẩn phần tử có class là "welcomeMessage"
+						
+						// Hiện phần tử có class là "chatt"
+						$(".chatGroup").removeClass("hidden");
+					},
+					error: function (xhr, status, error) {
+						console.error("Lỗi khi lấy phòng chat:", error);
+						// Xử lý lỗi nếu cần
+					}
+				});
+			});
+		});
+		
 		$(document).ready(function () {
 			// Sử dụng sự kiện delegate để xử lý click cho ảnh trong friendList
 			$(document).on('click', '#friendList img', function (e) {
@@ -443,10 +500,12 @@
 						senderPhoneNumber: senderPhoneNumber
 					},
 					success: function (response) {
-						// Chèn nội dung của Chat vào phần tử có class là "chatt"
-						$(".chatt").html(response);
 						// Ẩn phần tử có class là "welcomeMessage"
 						$(".welcomeMessage").addClass("hidden");
+						$(".chatGroup").addClass("hidden");
+						// Chèn nội dung của Chat vào phần tử có class là "chatt"
+						$(".chatt").html(response);
+						
 						// Hiện phần tử có class là "chatt"
 						$(".chatt").removeClass("hidden");
 					},
@@ -459,7 +518,7 @@
 		});
 
 		// Xử lý sự kiện khi nút "Danh sách bạn bè" được nhấn
-		$("#showFriendListBtn").click(function () {
+		$("#showFriendListBtn2").click(function () {
 			$("#friendList").removeClass("hidden");
 			$("#groupChatList").addClass("hidden");
 		});
@@ -476,26 +535,32 @@
 				// Lấy giá trị từ các trường input
 				var groupName = $("#groupName").val().trim();
 
-				// Gửi yêu cầu AJAX đến endpoint /createGroupChat
-				$.ajax({
-					url: "/createGroupChat",
-					method: "POST",
-					contentType: "application/json",
-					data: JSON.stringify({
-						"groupName": groupName,
-						"selectedFriends": selectedFriends
-					}),
-					success: function (response) {
-						// Xử lý kết quả nếu cần
-						console.log("Nhóm chat đã được tạo thành công!");
-						// Đóng modal sau khi tạo nhóm chat thành công
-						$("#addGroupModal").modal("hide");
-					},
-					error: function (xhr, status, error) {
-						console.error("Lỗi khi tạo nhóm chat:", error);
-						// Xử lý lỗi nếu cần
-					}
-				});
+				// Kiểm tra nếu có ít nhất 2 người được chọn
+				if (selectedFriends.length >= 2) {
+					// Gửi yêu cầu AJAX đến endpoint /createGroupChat
+					$.ajax({
+						url: "/createGroupChat",
+						method: "POST",
+						contentType: "application/json",
+						data: JSON.stringify({
+							"groupName": groupName,
+							"selectedFriends": selectedFriends
+						}),
+						success: function (response) {
+							// Xử lý kết quả nếu cần
+							console.log("Nhóm chat đã được tạo thành công!");
+							// Đóng modal sau khi tạo nhóm chat thành công
+							$("#addGroupModal").modal("hide");
+						},
+						error: function (xhr, status, error) {
+							console.error("Lỗi khi tạo nhóm chat:", error);
+							// Xử lý lỗi nếu cần
+						}
+					});
+				} else {
+					// Hiển thị thông báo khi không đủ người được chọn để tạo nhóm
+					alert("Vui lòng chọn ít nhất 2 người để tạo nhóm.");
+				}
 			});
 		});
 

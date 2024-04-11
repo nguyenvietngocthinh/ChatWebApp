@@ -33,16 +33,5 @@ public class ChatMessageServiceImpl {
         return chatId.map(repository::findByChatId).orElse(new ArrayList<>());
     }
     
-    public boolean deleteChatMessageByTimestamp(long timestamp) {
-        // Lấy danh sách tin nhắn dựa trên timestamp
-        List<ChatMessage> messages = repository.findByTimestamp(new Date(timestamp));
-        
-        if (!messages.isEmpty()) {
-            // Xóa các tin nhắn tìm thấy
-            repository.deleteAll(messages);
-            return true;
-        } else {
-            return false;
-        }
-    }
+   
 }

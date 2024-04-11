@@ -27,6 +27,7 @@ import com.iuh.ChatWebApp.Service.ChatRoomServiceImpl;
 import com.iuh.ChatWebApp.Service.UserServiceImpl;
 import com.iuh.ChatWebApp.entity.ChatMessage;
 import com.iuh.ChatWebApp.entity.ChatNotification;
+import com.iuh.ChatWebApp.entity.ChatRoom;
 import com.iuh.ChatWebApp.entity.User;
 import com.iuh.ChatWebApp.entity.dto.GroupChatRequest;
 
@@ -57,8 +58,29 @@ public class ChatController {
 			User chatFriendUser = userService.findUserByPhoneNumber(friendPhoneNumber);
 
 			model.addAttribute("chatFriendUser", chatFriendUser);
+			System.out.println(chatFriendUser);
 			model.addAttribute("loggedInUser", loggedInUser);
 			return "Chat";
+		} else {
+			return "showFormHome";
+		}
+	}
+
+	@GetMapping("/getChatGroupRoom")
+	public String getChatGrouptRoom(@RequestParam("groupChatName") String groupChatName, Model model,
+			HttpSession session) {
+		User loggedInUser = (User) session.getAttribute("loggedInUser");
+		String loggedInUserPhoneNumber = loggedInUser.getPhoneNumber();
+		
+		Optional<String> chatGroupRoomId = chatRoomServiceImpl.getChatGroupRoomId(groupChatName, loggedInUserPhoneNumber);
+		
+		
+		if (chatGroupRoomId.isPresent()) {
+			ChatRoom chatRoomGroup = chatRoomServiceImpl.findByChatIdAndSenderId("Group_"+groupChatName, loggedInUserPhoneNumber);
+
+			model.addAttribute("chatRoomGroup", chatRoomGroup);
+			model.addAttribute("loggedInUser", loggedInUser);
+			return "ChatGroup";
 		} else {
 			return "showFormHome";
 		}
@@ -72,17 +94,6 @@ public class ChatController {
 				savedMsg.getId(), savedMsg.getSenderId(), savedMsg.getReceiverId(), savedMsg.getContent()));
 
 	}
-
-//	@PostMapping("/createGroupChat")
-//	public String createGroupChat(@RequestParam("groupName") String groupName,
-//			@RequestBody List<String> selectedFriends, HttpSession session) {
-//		User loggedInUser = (User) session.getAttribute("loggedInUser");
-//
-//		String senderId = loggedInUser.getPhoneNumber();
-//
-//		chatRoomServiceImpl.createGroupChat(groupName, senderId, selectedFriends);
-//		return "redirect:/HomePage"; // Chuyển hướng sau khi tạo nhóm chat thành công
-//	}
 
 	@PostMapping("/createGroupChat")
 	@ResponseBody
