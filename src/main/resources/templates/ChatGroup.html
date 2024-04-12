@@ -364,7 +364,7 @@
 		var stompClient = null;
 
 		function connect() {
-			var socket = new SockJS('/ws');
+			var socket = new SockJS('http://192.168.1.2:8081/ws');
 			stompClient = Stomp.over(socket);
 			stompClient.connect({}, function (frame) {
 
