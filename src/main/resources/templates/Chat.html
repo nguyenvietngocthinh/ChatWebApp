@@ -547,7 +547,7 @@
 
 		//Ham connect socket
 		function connect() {
-			var socket = new SockJS('http://192.168.1.2:8081/ws');
+			var socket = new SockJS('http://172.21.110.176:8081/ws');
 			stompClient = Stomp.over(socket);
 
 			// Sự kiện khi kết nối WebSocket được mở thành công
