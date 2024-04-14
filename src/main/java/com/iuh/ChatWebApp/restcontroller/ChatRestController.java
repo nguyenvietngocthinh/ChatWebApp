@@ -1,4 +1,4 @@
-package com.iuh.ChatWebApp.controller;
+package com.iuh.ChatWebApp.restcontroller;
 
 import java.util.HashMap;
 import java.util.List;
@@ -89,5 +89,16 @@ public class ChatRestController {
             return ResponseEntity.notFound().build();
         }
     }
+	
+	@GetMapping("/getGroupListChatRoomsM")
+	public ResponseEntity<List<ChatRoom>> getGroupListChatRooms(HttpSession session) {
+	    User loggedInUser = (User) session.getAttribute("loggedInUser");
+	    if (loggedInUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+	    }
+	    List<ChatRoom> groupChatRooms = chatRoomServiceImpl.getGroupChatRooms(loggedInUser.getPhoneNumber());
+	    return ResponseEntity.ok(groupChatRooms);
+	}
+
 
 }

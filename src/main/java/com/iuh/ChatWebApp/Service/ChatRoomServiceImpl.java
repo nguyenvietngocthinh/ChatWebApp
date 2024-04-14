@@ -70,5 +70,7 @@ public class ChatRoomServiceImpl {
 	public ChatRoom findByChatIdAndSenderId(String chatId, String senderId) {
 		return chatRoomRepository.findByChatIdAndSenderId(chatId, senderId);
 	}
+	
+	
 
 }

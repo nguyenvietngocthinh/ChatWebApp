@@ -1,4 +1,4 @@
-package com.iuh.ChatWebApp.controller;
+package com.iuh.ChatWebApp.restcontroller;
 
 import java.util.List;
 

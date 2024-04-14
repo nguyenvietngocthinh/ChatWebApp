@@ -1,4 +1,4 @@
-package com.iuh.ChatWebApp.controller;
+package com.iuh.ChatWebApp.restcontroller;
 
 import java.util.List;
 
@@ -63,4 +63,15 @@ public class FriendRestController {
         List<User> friendUsers = friendService.searchFriends(searchFriendsInput, loggedInUser.getPhoneNumber());
         return ResponseEntity.ok(friendUsers);
     }
+	
+	@GetMapping("/getFriendListM")
+	public ResponseEntity<List<User>> getFriendList(HttpSession session) {
+	    User loggedInUser = (User) session.getAttribute("loggedInUser");
+	    if (loggedInUser == null) {
+	        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+	    }
+	    List<User> friendList = friendService.getFriendListByPhoneNumber(loggedInUser.getPhoneNumber());
+	    return ResponseEntity.ok(friendList);
+	}
+
 }
