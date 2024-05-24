@@ -547,7 +547,7 @@
 
 		//Ham connect socket
 		function connect() {
-			var socket = new SockJS('http://192.168.1.6:8081/ws');
+			var socket = new SockJS('https://chatwebapp-qdg1.onrender.com/ws');
 			stompClient = Stomp.over(socket);
 
 			// Sự kiện khi kết nối WebSocket được mở thành công
