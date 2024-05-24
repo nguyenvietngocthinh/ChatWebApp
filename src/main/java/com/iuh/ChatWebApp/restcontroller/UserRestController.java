@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.iuh.ChatWebApp.Service.UserServiceImpl;
 import com.iuh.ChatWebApp.entity.User;
+import com.iuh.ChatWebApp.entity.dto.respone.LogoutRespone;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -67,15 +68,22 @@ public class UserRestController {
 	}
 
 	@PostMapping("/logoutM")
-	public ResponseEntity<?> logoutM(HttpSession session) {
-		User loggedInUser = (User) session.getAttribute("loggedInUser");
-		if (loggedInUser != null) {
-			loggedInUser.setOnline(false);
-			userService.saveUser(loggedInUser);
-			session.removeAttribute("loggedInUser");
-		}
-		return ResponseEntity.ok().build();
+	public ResponseEntity<LogoutRespone> logoutM(HttpSession session) {
+	    User loggedInUser = (User) session.getAttribute("loggedInUser");
+	    LogoutRespone response;
+	    if (loggedInUser != null) {
+	        loggedInUser.setOnline(false);
+	        userService.saveUser(loggedInUser);
+	        session.removeAttribute("loggedInUser");
+	        response = new LogoutRespone("Logout thành công");
+	        return ResponseEntity.ok(response);
+	    } else {
+	        response = new LogoutRespone("Chưa đăng nhập");
+	        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);
+	    }
 	}
+
+
 
 	@PostMapping("/updateM")
 	public ResponseEntity<?> updateUserM(@RequestBody @Validated User updatedUser, BindingResult bindingResult,

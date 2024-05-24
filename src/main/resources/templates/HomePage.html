@@ -160,12 +160,13 @@
 								<div class="list-group" id="friendUsersList">
 
 								</div>
+								<div class="modal-footer">
+									<button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
+									<button type="submit" class="btn btn-primary" id="createGroupBtn">Tạo nhóm</button>
+								</div>
 							</form>
 						</div>
-						<div class="modal-footer">
-							<button type="button" class="btn btn-secondary" data-dismiss="modal">Đóng</button>
-							<button type="submit" class="btn btn-primary" id="createGroupBtn">Tạo nhóm</button>
-						</div>
+
 					</div>
 
 				</div>
@@ -246,7 +247,8 @@
 									class="rounded-circle mr-1" width="40" height="40">
 								<div lass="flex-grow-1 ml-3">
 									<!-- Các thông tin khác về bạn bè có thể thêm vào đây -->
-									<p id="groupChatName" name="groupChatName" th:text="${groupChat.chatId.substring(6)}" </p>
+									<p id="groupChatName" name="groupChatName"
+										th:text="${groupChat.chatId.substring(6)}" </p>
 								</div>
 							</div>
 						</a>
@@ -258,7 +260,7 @@
 
 		<div class="chatt hidden">
 		</div>
-		
+
 		<div class="chatGroup hidden">
 		</div>
 
@@ -283,6 +285,9 @@
 	<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
 	<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1.5.1/dist/sockjs.min.js"></script>
 	<script src="https://cdnjs.cloudflare.com/ajax/libs/stomp.js/2.3.3/stomp.min.js"></script>
+	<script src="https://code.jquery.com/jquery-3.5.1.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.0/dist/js/bootstrap.bundle.min.js"></script>
+
 
 
 
@@ -472,7 +477,7 @@
 						// Chèn nội dung của Chat vào phần tử có class là "chatt"
 						$(".chatGroup").html(response);
 						// Ẩn phần tử có class là "welcomeMessage"
-						
+
 						// Hiện phần tử có class là "chatt"
 						$(".chatGroup").removeClass("hidden");
 					},
@@ -483,7 +488,7 @@
 				});
 			});
 		});
-		
+
 		$(document).ready(function () {
 			// Sử dụng sự kiện delegate để xử lý click cho ảnh trong friendList
 			$(document).on('click', '#friendList img', function (e) {
@@ -505,7 +510,7 @@
 						$(".chatGroup").addClass("hidden");
 						// Chèn nội dung của Chat vào phần tử có class là "chatt"
 						$(".chatt").html(response);
-						
+
 						// Hiện phần tử có class là "chatt"
 						$(".chatt").removeClass("hidden");
 					},
@@ -548,9 +553,12 @@
 						}),
 						success: function (response) {
 							// Xử lý kết quả nếu cần
-							console.log("Nhóm chat đã được tạo thành công!");
+
 							// Đóng modal sau khi tạo nhóm chat thành công
 							$("#addGroupModal").modal("hide");
+							$('body').removeClass('modal-open');
+							$('.modal-backdrop').remove();
+							alert("Nhóm chat đã được tạo thành công!");
 						},
 						error: function (xhr, status, error) {
 							console.error("Lỗi khi tạo nhóm chat:", error);

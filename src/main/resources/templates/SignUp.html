@@ -146,6 +146,9 @@
 			<div class="card">
 				<div class="card-body">
 					<h3 class="text-center">Đăng Ký</h3>
+					<div th:if="${messageFail != null}" class="alert alert-danger" role="alert">
+						<span th:text="${messageFail}"></span>
+					</div>
 					<div class="container p-2">
 						<div id="sendOtp">
 							<input type="text" class="form-control" id="phoneNum" required name="phoneNum"
@@ -237,6 +240,9 @@
 		integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl"
 		crossorigin="anonymous"></script>
 
+	<script src="https://code.jquery.com/jquery-1.10.2.min.js"></script>
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@4.1.1/dist/js/bootstrap.bundle.min.js"></script>
+
 
 	<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-app-compat.js"></script>
 	<script src="https://www.gstatic.com/firebasejs/9.12.1/firebase-auth-compat.js"></script>
@@ -244,15 +250,17 @@
 
 	<script>
 		const firebaseConfig = {
-			apiKey: "AIzaSyAOHGl3RzGuYknJ78TYkI7k_4euwiWnJ5o",
-			authDomain: "chatapp-c3682.firebaseapp.com",
-			projectId: "chatapp-c3682",
-			storageBucket: "chatapp-c3682.appspot.com",
-			messagingSenderId: "501556005640",
-			appId: "1:501556005640:web:dc2c304a668be990487abd"
+			apiKey: "AIzaSyDgGpKlfiph9ogEFBdvbklDFRkPtf5bi-I",
+			authDomain: "chatwebapp-1fd6e.firebaseapp.com",
+			projectId: "chatwebapp-1fd6e",
+			storageBucket: "chatwebapp-1fd6e.appspot.com",
+			messagingSenderId: "336251262394",
+			appId: "1:336251262394:web:fbe994fd18637aba5af983",
+			measurementId: "G-K6L8GEE1DD"
 		};
 		firebase.initializeApp(firebaseConfig);
 		render();
+
 		function render() {
 			window.recaptchaVerifier = new firebase.auth.RecaptchaVerifier('recaptcha-container');
 			recaptchaVerifier.render();
@@ -291,6 +299,8 @@
 				document.getElementById('exampleInputPhoneNumber1').value = phoneNumber;
 			}).catch(function () {
 				document.getElementsByClassName('n-conf').style.display = 'block';
+
+				alert("Sai OTP");
 			})
 		}
 

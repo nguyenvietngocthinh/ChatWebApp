@@ -163,26 +163,23 @@ public class UserController {
 
 	@PostMapping("/doLogin")
 	public String doLogin(@RequestParam("phoneNumber") String phoneNumber, @RequestParam("password") String password,
-			HttpSession session, Model model) {
+	                      HttpSession session, Model model) {
+	    // Kiểm tra xem người dùng có tồn tại trong hệ thống hay không
+	    User user = userService.findByPhoneNumberAndPassword(phoneNumber, password);
 
-		// Kiểm tra xem người dùng có tồn tại trong hệ thống hay không
-		User user = userService.findByPhoneNumberAndPassword(phoneNumber, password);
-
-		if (user != null) {
-			user.setOnline(true);
-			userService.saveUser(user);
-			// Nếu đăng nhập thành công, lưu thông tin người dùng vào session và chuyển
-			// hướng đến trang chính
-			session.setAttribute("loggedInUser", user);
-			System.out.print(user);
-			return "redirect:/showFormHome";
-		} else {
-			// Nếu không tồn tại người dùng hoặc thông tin không đúng, hiển thị thông báo
-			// lỗi và chuyển hướng đến trang đăng nhập
-			model.addAttribute("error", "Số điện thoại hoặc mật khẩu không đúng");
-			return "redirect:/";
-		}
+	    if (user != null) {
+	        user.setOnline(true);
+	        userService.saveUser(user);
+	        // Nếu đăng nhập thành công, lưu thông tin người dùng vào session và chuyển hướng đến trang chính
+	        session.setAttribute("loggedInUser", user);
+	        return "redirect:/showFormHome";
+	    } else {
+	        // Nếu không tồn tại người dùng hoặc thông tin không đúng, hiển thị thông báo lỗi và chuyển hướng đến trang đăng nhập
+	        model.addAttribute("error", "Số điện thoại hoặc mật khẩu không đúng");
+	        return "SignIn";
+	    }
 	}
+
 	
 	/* 
 	 * logout
@@ -296,16 +293,5 @@ public class UserController {
 		return "SearchResults";
 	}
 
-	@GetMapping("/searchMobile")
-	public ResponseEntity<List<User>> searchUsersMobile(@RequestParam("searchText") String searchText,
-			HttpSession session) {
-		User loggedInUser = (User) session.getAttribute("loggedInUser");
-
-		if (loggedInUser == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
-		}
-
-		List<User> foundUsers = userService.searchUsers(searchText, loggedInUser.getPhoneNumber());
-		return ResponseEntity.ok(foundUsers);
-	}
+	
 }
